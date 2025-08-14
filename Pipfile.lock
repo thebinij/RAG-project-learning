@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "29d1fcf5f2ea1f5826558fed5bfe24532c27893f8026e0d54a751e44ee67b66b"
+            "sha256": "337428231ec2efb399dbfa9eb0c6ec7cc754c956f664bd47b269b805a0461ec9"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -9,7 +9,7 @@
         },
         "sources": [
             {
-                "name": "pypi",
+                "name": "rag-project-learning",
                 "url": "https://pypi.org/simple",
                 "verify_ssl": true
             }
@@ -296,7 +296,7 @@
                 "sha256:937051fc3aae94f7c171503d8f1f7662820aacc75acf45f28d3656c75c5ff1f8",
                 "sha256:c0f5c5ad0c59154a9cab1506b857bab8487b588352e668cf1222c54bb9d52daa"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.9'",
             "version": "==1.0.16"
         },
@@ -387,17 +387,17 @@
                 "sha256:c46ac7c312df840f0c9e220f7964bada936781bc4e2e6eb71f1c4d7553786565",
                 "sha256:ed52cbf946abfd70c5a0dccb24673f0670deeb517a88b3544d03c2a6bf283143"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.8'",
             "version": "==0.116.1"
         },
         "filelock": {
             "hashes": [
-                "sha256:adbc88eabb99d2fec8c9c1b229b171f18afa655400173ddc653d5d01501fb9f2",
-                "sha256:c401f4f8377c4464e6db25fff06205fd89bdd83b65eb0488ed1b160f780e21de"
+                "sha256:66eda1888b0171c998b35be2bcc0f6d75c388a7ce20c3f3f37aa8e96c2dddf58",
+                "sha256:d38e30481def20772f5baf097c122c3babc4fcdb7e14e57049eb9d88c6dc017d"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==3.18.0"
+            "version": "==3.19.1"
         },
         "flatbuffers": {
             "hashes": [
@@ -1079,7 +1079,7 @@
                 "sha256:9dbcdb425553bae1ac5d947147bebbd630d91bbfc7788394d4c4f3a35682ab3a",
                 "sha256:f2082d155b1ad22e83247c3de3958eb4255b20ccf4a1de2e6681b6957b554e92"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.8'",
             "version": "==1.99.9"
         },
@@ -1624,7 +1624,7 @@
                 "sha256:d989c3c6cb79469287b1569f7447a17848c998458d49ebe294e975b9baf0f0db",
                 "sha256:dde5df002701f6de26248661f6835bbe296a47bf73990135c7d07ce741b9623b"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.9'",
             "version": "==2.11.7"
         },
@@ -1738,7 +1738,7 @@
                 "sha256:06f0062169818d0f5524420a360d632d5857b83cffd4d42fe29597807a1614ee",
                 "sha256:a60952460b99cf661dc25c29c0ef171721f98bfcb52ef8d9ea4c943d7c8cc796"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.9'",
             "version": "==2.10.1"
         },
@@ -1796,7 +1796,7 @@
                 "sha256:8a62d3a8335e06589fe01f2a3e178cdcc632f3fbe0d492ad9ee0ec35aab1f104",
                 "sha256:8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.8'",
             "version": "==0.0.20"
         },
@@ -1981,7 +1981,7 @@
                 "sha256:536f5f1785986d6dbdea3c75205c473f970777b4a0d6c6dd1b696aa05a3fa04f",
                 "sha256:e497a48b844b0320d45007cdebfeaeed8db2a4f4bcf49f15e455cfc4af11eaa8"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_full_version >= '3.8.0'",
             "version": "==14.1.0"
         },
@@ -2273,7 +2273,7 @@
                 "sha256:70c7630697cc1c64ffca328d6e8688430ebd134b3c2df03dc07cb3a016b04739",
                 "sha256:fc803929f6a3ce82e2b2c06e0efed7a36de535c633d5ce55efac0b710ea5643e"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.9'",
             "version": "==5.1.0"
         },
@@ -2322,7 +2322,7 @@
                 "sha256:186cd1b0a8ae762e29417095664adf1d6a31702160a46dacb7796ea82f7409e4",
                 "sha256:fe809ff5c27e557d14e613f45ca441aabda051d119ee5a0102aaba6ce40eed2c"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.8'",
             "version": "==25.4.0"
         },
@@ -2741,7 +2741,7 @@
                 "sha256:ea0213189960bda9cf99be5b8c8ce66bb054af5e9e861249cd23471bd7b0b3ba",
                 "sha256:f3df5f1bf91d36002b0a75389ca8663510cf0531cca8aa5c1ef695b46d98655f"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.9'",
             "version": "==25.1.0"
         },
@@ -2766,7 +2766,7 @@
                 "sha256:b9696257b9ce8beb888cdbe31cf885c90d31928fe202be0889a7cdafad32f01e",
                 "sha256:fe044858146b9fc69b551a4b490d69cf960fcb78ad1edcb84e7fbb1b4a8e3872"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.9'",
             "version": "==7.3.0"
         },
@@ -2815,7 +2815,7 @@
                 "sha256:1cb5df28dfbc742e490c5e41bad6da41b805b0a8be7bc93cd0fb2a8a890ac450",
                 "sha256:2dc5d7f65c9678d94c88dfc29161a320eec67328bc97aad576874cb4be1e9615"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_full_version >= '3.9.0'",
             "version": "==6.0.1"
         },
@@ -2896,7 +2896,7 @@
                 "sha256:539c70ba6fcead8e78eebbf1115e8b589e7565830d7d006a8723f19ac8a0afb7",
                 "sha256:7c67fd69174877359ed9371ec3af8a3d2b04741818c51e5e99cc1742251fa93c"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.9'",
             "version": "==8.4.1"
         },
@@ -2905,7 +2905,7 @@
                 "sha256:5fe2d69607b0bd75c656d1211f969cadba035030156745ee09e7d71740e58ecf",
                 "sha256:796aa822981e01b68c12e4827b8697108f7205020f24b5793b3c41555dab68ea"
             ],
-            "index": "pypi",
+            "index": "rag-project-learning",
             "markers": "python_version >= '3.9'",
             "version": "==1.1.0"
         },
