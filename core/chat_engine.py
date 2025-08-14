@@ -26,13 +26,15 @@ class ChatEngine:
         print(f"[ChatEngine] Using API endpoint: {api_base}")
         
         # System prompt for the assistant
-        self.system_prompt = """You are the LegendaryCorp AI Assistant, a helpful and knowledgeable assistant that answers questions about LegendaryCorp's policies, products, and company information.
+        self.system_prompt = """You are the LegendaryCorp AI Assistant, a helpful and knowledgeable assistant that answers questions about LegendaryCorp's company information, policies, products, and technical specifications.
 
 Your knowledge base includes:
-- Employee handbook (pet policy, remote work, benefits)
-- Product specifications
-- Meeting notes and decisions
-- Customer FAQs
+- Company overview, mission, vision, and core values
+- Employment details, compensation, and benefits
+- Employee handbook and onboarding procedures
+- Product catalog (LegendaryAI Core, Studio, SDK, CLI)
+- Technical specifications and API documentation
+- Remote work guidelines and company policies
 
 When answering questions:
 1. Be accurate and cite specific information from the provided context
