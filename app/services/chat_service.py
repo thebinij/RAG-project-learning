@@ -2,13 +2,11 @@
 Chat service for RAG operations
 """
 
-from typing import List, Dict, Any
-from app.core.logging import logger
-from app.core.config import settings
-import sys
-import os
+from typing import Any, Dict
 
+from app.core.config import settings
 from app.core.engines.chat_engine import ChatEngine
+from app.core.logging import logger
 
 
 class ChatService:

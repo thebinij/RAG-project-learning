@@ -2,13 +2,12 @@
 Vector service for ChromaDB operations
 """
 
-from typing import List, Dict, Any, Optional
-from app.core.logging import logger
-from app.core.config import settings
-import sys
 import os
+from typing import Any, Dict, List
 
+from app.core.config import settings
 from app.core.engines.vector_engine import VectorEngine
+from app.core.logging import logger
 
 
 class VectorService:

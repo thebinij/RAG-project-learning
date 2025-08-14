@@ -2,9 +2,10 @@
 Configuration management for the FastAPI application
 """
 
-from typing import Optional, List
+from typing import List, Optional
+
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
-from pydantic import Field, validator
 
 
 class Settings(BaseSettings):
@@ -55,7 +56,7 @@ class Settings(BaseSettings):
         default="./knowledge-docs", env="KNOWLEDGE_DOCS_PATH"
     )
 
-    @validator("cors_origins", pre=True)
+    @field_validator("cors_origins", pre=True)
     def parse_cors_origins(cls, v):
         if isinstance(v, str):
             return [i.strip() for i in v.split(",")]

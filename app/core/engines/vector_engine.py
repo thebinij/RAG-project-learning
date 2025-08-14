@@ -2,12 +2,13 @@
 Vector Engine - Manages vector database operations using ChromaDB
 """
 
+import os
+from datetime import datetime
+from typing import Any, Dict, List
+
 import chromadb
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
-from typing import List, Dict, Any
-from datetime import datetime
-import os
 
 
 class VectorEngine:

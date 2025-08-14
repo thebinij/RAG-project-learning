@@ -2,10 +2,10 @@
 Document Processor - Handles chunking and processing of LegendaryCorp documents
 """
 
-import re
-from typing import List, Dict, Any
-from pathlib import Path
 import hashlib
+import re
+from pathlib import Path
+from typing import Any, Dict, List
 
 
 class DocumentProcessor:

@@ -3,9 +3,11 @@ Logging configuration for the FastAPI application
 """
 
 import logging
+
 import structlog
 from rich.console import Console
 from rich.logging import RichHandler
+
 from app.core.config import settings
 
 # Rich console for pretty output

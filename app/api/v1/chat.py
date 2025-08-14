@@ -5,14 +5,14 @@ Chat API router
 import asyncio
 import json
 from datetime import datetime
-from typing import List, Dict, Any
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+
+from app.core.logging import logger
 from app.schemas.chat import ChatRequest, ChatResponse, StatusResponse
 from app.services.chat_service import ChatService
 from app.services.vector_service import VectorService
-from app.core.logging import logger
 
 chat_router = APIRouter(prefix="/chat", tags=["Chat API"])
 

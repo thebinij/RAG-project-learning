@@ -2,7 +2,8 @@
 Chat-related Pydantic schemas
 """
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from pydantic import BaseModel, Field
 
 

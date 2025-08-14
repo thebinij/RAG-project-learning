@@ -6,20 +6,21 @@ import os
 import sys
 from contextlib import asynccontextmanager
 from typing import Optional
+
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.config import settings
-from app.core.logging import logger, console
 from app.api import chat_router, visualizer_router
+from app.core.config import settings
+from app.core.logging import console, logger
 
 # Global service instances
 _vector_service: Optional["VectorService"] = None
@@ -47,9 +48,9 @@ async def lifespan(app: FastAPI):
 
     try:
         # Initialize services
-        from app.services.vector_service import VectorService
         from app.services.chat_service import ChatService
         from app.services.document_service import DocumentService
+        from app.services.vector_service import VectorService
 
         _vector_service = VectorService()
         logger.info("Vector service ready")

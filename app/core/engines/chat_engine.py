@@ -3,7 +3,8 @@ Chat Engine - Handles the RAG pipeline and response generation
 """
 
 import os
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 from openai import OpenAI
 
 

@@ -3,9 +3,10 @@ ChromaDB Visualizer API routes
 """
 
 from collections import Counter
-from typing import List, Dict, Any, Optional
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Request, Query, Depends
+from fastapi import APIRouter, Depends, Query
+
 from app.core.logging import logger
 from app.services.vector_service import VectorService
 

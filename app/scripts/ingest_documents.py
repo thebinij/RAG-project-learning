@@ -1,7 +1,7 @@
-import os
+from pathlib import Path
+
 import chromadb
 from sentence_transformers import SentenceTransformer
-from pathlib import Path
 
 print("LegendaryCorp KNOWLEDGE INGESTION SYSTEM")
 print("=" * 50)
