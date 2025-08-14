@@ -8,7 +8,6 @@ import sys
 from datetime import datetime
 import json
 import time
-import chromadb
 from collections import Counter
 from dotenv import load_dotenv
 
@@ -249,11 +248,11 @@ def chat_stream():
             # Get response from RAG system
             response = chat_engine.get_response(user_message)
             
-            # Stream the response word by word
-            words = response['answer'].split()
-            for i, word in enumerate(words):
-                time.sleep(0.05)  # Small delay for streaming effect
-                yield f"data: {json.dumps({'event': 'token', 'content': word + ' '})}\n\n"
+            # Stream the response character by character to preserve markdown formatting
+            response_text = response['answer']
+            for char in response_text:
+                time.sleep(0.01)  # Smaller delay for smoother streaming
+                yield f"data: {json.dumps({'event': 'token', 'content': char})}\n\n"
             
             # Send sources at the end
             yield f"data: {json.dumps({'event': 'sources', 'sources': response['sources'], 'confidence': response['confidence']})}\n\n"

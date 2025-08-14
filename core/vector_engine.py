@@ -12,6 +12,10 @@ import os
 class VectorEngine:
     def __init__(self, collection_name: str = "LegendaryCorp_docs"):
         print("[VectorEngine] Initializing ChromaDB...")
+        
+        # Fix HuggingFace tokenizers parallelism warning
+        os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+        
         # Initialize ChromaDB client with persistent storage
         self.client = chromadb.PersistentClient(
             path="./chroma_db",
