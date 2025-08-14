@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - ChromaDB Visualizer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .search-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .search-input {
+            border-radius: 25px;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .search-btn {
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            background: #28a745;
+            color: white;
+            transition: all 0.3s;
+        }
+        .search-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        .result-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid #667eea;
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .similarity-badge {
+            font-size: 1rem;
+            padding: 8px 15px;
+        }
+        .filter-pills {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .filter-pill {
+            display: inline-block;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 8px 16px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-pill:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        .filter-pill.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .search-history {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .history-item {
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 5px 0;
+            transition: background-color 0.2s;
+        }
+        .history-item:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-database me-2"></i>
+                ChromaDB Visualizer
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-comments me-1"></i>Chat</a>
+                <a class="nav-link" href="/visualizer"><i class="fas fa-chart-pie me-1"></i>Dashboard</a>
+                <a class="nav-link" href="/visualizer/documents"><i class="fas fa-file-alt me-1"></i>Documents</a>
+                <a class="nav-link active" href="/visualizer/search"><i class="fas fa-search me-1"></i>Search</a>
+                <a class="nav-link" href="/visualizer/explore"><i class="fas fa-compass me-1"></i>Explore</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Search Header -->
+        <div class="search-container">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-search me-3"></i>
+                Semantic Search
+            </h1>
+            <p class="lead mb-4">
+                Find relevant documents using AI-powered semantic search
+            </p>
+            
+            <!-- Search Form -->
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control search-input" 
+                               placeholder="Enter your search query..." aria-label="Search query">
+                        <button class="btn search-btn" type="button" onclick="performSearch()">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Options -->
+            <div class="row justify-content-center mt-3">
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <label class="text-white me-3">Results:</label>
+                        <select id="resultLimit" class="form-select form-select-sm" style="width: auto;">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-pills">
+            <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Quick Filters</h5>
+            <div id="categoryFilters">
+                <!-- Category filters will be populated here -->
+            </div>
+        </div>
+
+        <!-- Search History -->
+        <div class="search-history">
+            <h5 class="mb-3"><i class="fas fa-history me-2"></i>Recent Searches</h5>
+            <div id="searchHistory">
+                <!-- Search history will be populated here -->
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div id="searchResults" style="display: none;">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h4><i class="fas fa-list me-2"></i>Search Results</h4>
+                    <p class="text-muted" id="resultSummary"></p>
+                </div>
+            </div>
+            
+            <div id="resultsContainer">
+                <!-- Results will be populated here -->
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" style="display: none;">
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No results found</h4>
+                <p class="text-muted">Try adjusting your search terms or filters</p>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" style="display: none;">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted">Searching your documents...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let searchHistory = [];
+        let currentFilters = new Set();
+        let lastSearchQuery = '';
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFilters();
+            loadSearchHistory();
+            
+            // Enter key search
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+
+        // Load category filters
+        async function loadFilters() {
+            try {
+                const response = await fetch('/api/visualizer/stats');
+                const stats = await response.json();
+                
+                if (stats.error) return;
+                
+                const container = document.getElementById('categoryFilters');
+                container.innerHTML = '';
+                
+                Object.keys(stats.categories).forEach(category => {
+                    const pill = document.createElement('span');
+                    pill.className = 'filter-pill';
+                    pill.textContent = category;
+                    pill.onclick = () => toggleFilter(category);
+                    container.appendChild(pill);
+                });
+                
+            } catch (error) {
+                console.error('Error loading filters:', error);
+            }
+        }
+
+        // Toggle filter
+        function toggleFilter(category) {
+            const pill = event.target;
+            if (currentFilters.has(category)) {
+                currentFilters.delete(category);
+                pill.classList.remove('active');
+            } else {
+                currentFilters.add(category);
+                pill.classList.add('active');
+            }
+        }
+
+        // Load search history
+        function loadSearchHistory() {
+            const history = JSON.parse(localStorage.getItem('chromadb_search_history') || '[]');
+            searchHistory = history;
+            displaySearchHistory();
+        }
+
+        // Display search history
+        function displaySearchHistory() {
+            const container = document.getElementById('searchHistory');
+            container.innerHTML = '';
+            
+            if (searchHistory.length === 0) {
+                container.innerHTML = '<p class="text-muted">No recent searches</p>';
+                return;
+            }
+            
+            searchHistory.slice(0, 10).forEach(query => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                item.innerHTML = `<i class="fas fa-search me-2"></i>${query}`;
+                item.onclick = () => {
+                    document.getElementById('searchInput').value = query;
+                    performSearch();
+                };
+                container.appendChild(item);
+            });
+        }
+
+        // Add to search history
+        function addToHistory(query) {
+            if (!searchHistory.includes(query)) {
+                searchHistory.unshift(query);
+                searchHistory = searchHistory.slice(0, 20); // Keep last 20
+                localStorage.setItem('chromadb_search_history', JSON.stringify(searchHistory));
+                displaySearchHistory();
+            }
+        }
+
+        // Perform search
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            lastSearchQuery = query;
+            addToHistory(query);
+            
+            // Show loading
+            showLoading(true);
+            hideResults();
+            
+            try {
+                const limit = parseInt(document.getElementById('resultLimit').value);
+                const response = await fetch(`/api/visualizer/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+                const results = await response.json();
+                
+                showLoading(false);
+                displayResults(query, results);
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                showLoading(false);
+                showNoResults();
+            }
+        }
+
+        // Show loading
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+        }
+
+        // Hide results
+        function hideResults() {
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('noResults').style.display = 'none';
+        }
+
+        // Show no results
+        function showNoResults() {
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('noResults').style.display = 'block';
+        }
+
+        // Display search results
+        function displayResults(query, results) {
+            if (results.length === 0) {
+                showNoResults();
+                return;
+            }
+
+            // Apply filters if any
+            let filteredResults = results;
+            if (currentFilters.size > 0) {
+                filteredResults = results.filter(result => 
+                    currentFilters.has(result.metadata.category)
+                );
+            }
+
+            if (filteredResults.length === 0) {
+                showNoResults();
+                return;
+            }
+
+            // Update result summary
+            document.getElementById('resultSummary').textContent = 
+                `Found ${filteredResults.length} results for "${query}"${currentFilters.size > 0 ? ` (filtered by ${Array.from(currentFilters).join(', ')})` : ''}`;
+
+            // Display results
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+
+            filteredResults.forEach((result, index) => {
+                const card = document.createElement('div');
+                card.className = 'card result-card mb-3';
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title text-primary mb-0">
+                                ${result.metadata.title || 'No Title'}
+                            </h5>
+                            <span class="badge bg-success similarity-badge">
+                                ${(result.similarity * 100).toFixed(1)}% Match
+                            </span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span class="badge bg-secondary me-2">
+                                <i class="fas fa-folder me-1"></i>${result.metadata.category}
+                            </span>
+                            <span class="badge bg-info me-2">
+                                <i class="fas fa-file me-1"></i>${result.metadata.file}
+                            </span>
+                            ${result.metadata.chunk_index !== undefined ? 
+                                `<span class="badge bg-warning me-2">
+                                    <i class="fas fa-layer-group me-1"></i>Chunk ${result.metadata.chunk_index + 1}/${result.metadata.total_chunks}
+                                </span>` : ''
+                            }
+                        </div>
+                        
+                        <p class="card-text">${result.content_preview}</p>
+                        
+                        <button class="btn btn-outline-primary btn-sm" onclick="showFullContent('${result.id}')">
+                            <i class="fas fa-expand me-1"></i>View Full Content
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('searchResults').style.display = 'block';
+        }
+
+        // Show full content
+        function showFullContent(docId) {
+            // Find the document in the results
+            const doc = window.lastSearchResults?.find(r => r.id == docId);
+            if (!doc) return;
+
+            // Create modal content
+            const modalContent = `
+                <div class="modal-header">
+                    <h5 class="modal-title">${doc.metadata.title || 'Document Content'}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <span class="badge bg-secondary me-2">
+                            <i class="fas fa-folder me-1"></i>${doc.metadata.category}
+                        </span>
+                        <span class="badge bg-info me-2">
+                            <i class="fas fa-file me-1"></i>${doc.metadata.file}
+                        </span>
+                        <span class="badge bg-success me-2">
+                            ${(doc.similarity * 100).toFixed(1)}% Match
+                        </span>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Content</h6>
+                        </div>
+                        <div class="card-body">
+                            <pre style="white-space: pre-wrap; font-family: inherit; max-height: 400px; overflow-y: auto;">${doc.content}</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">Metadata</h6>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                ${Object.entries(doc.metadata).map(([key, value]) => `
+                                    <dt class="col-sm-3">${key}:</dt>
+                                    <dd class="col-sm-9">${value}</dd>
+                                `).join('')}
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Create and show modal
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog modal-xl">
+                    <div class="modal-content">
+                        ${modalContent}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+            
+            // Clean up modal after it's hidden
+            modal.addEventListener('hidden.bs.modal', function() {
+                document.body.removeChild(modal);
+            });
+        }
+
+        // Clear filters
+        function clearFilters() {
+            currentFilters.clear();
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            
+            // Re-run last search if exists
+            if (lastSearchQuery) {
+                performSearch();
+            }
+        }
+
+        // Add clear filters button
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterContainer = document.querySelector('.filter-pills');
+            const clearButton = document.createElement('button');
+            clearButton.className = 'btn btn-outline-secondary btn-sm ms-3';
+            clearButton.innerHTML = '<i class="fas fa-times me-1"></i>Clear Filters';
+            clearButton.onclick = clearFilters;
+            filterContainer.appendChild(clearButton);
+        });
+    </script>
+</body>
+</html>

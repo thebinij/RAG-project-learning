@@ -130,11 +130,17 @@ The ingestion process will:
 python app.py
 ```
 
-The application will start on `http://localhost:5000` by default.
+The application will start on `http://localhost:5252` by default.
 
 ### 4. Access the Chat Interface
 
-Open your browser and navigate to `http://localhost:5000` to use the interactive chat interface.
+Open your browser and navigate to:
+
+- **Chat Interface**: `http://localhost:5252/` - Main AI chat interface
+- **ChromaDB Visualizer**: `http://localhost:5252/visualizer` - Database visualization dashboard
+- **Documents Browser**: `http://localhost:5252/visualizer/documents` - Browse all documents
+- **Search Interface**: `http://localhost:5252/visualizer/search` - Advanced semantic search
+- **Data Explorer**: `http://localhost:5252/visualizer/explore` - Deep data analysis
 
 ## 🔧 Configuration
 
@@ -293,6 +299,43 @@ For issues and questions:
 1. Check the troubleshooting section
 2. Review existing issues
 3. Create a new issue with detailed information
+
+## 🎨 **ChromaDB Visualization Tools**
+
+### **Integrated Web Visualizer**
+The ChromaDB visualizer is now integrated directly into the main application:
+
+```bash
+# Start the unified application
+python app.py
+
+# Access the visualizer at: http://localhost:5252/visualizer
+```
+
+**Features:**
+- 📊 **Dashboard**: Overview with charts and statistics
+- 📚 **Documents**: Browse all documents with filtering and pagination
+- 🔍 **Search**: Advanced semantic search with filters
+- 🧭 **Explore**: Deep data analysis and visualizations
+- 📈 **Charts**: Interactive charts for category distribution, file analysis
+- 🎯 **Embeddings**: 2D visualization of document vectors
+- 📋 **Metadata**: Comprehensive metadata analysis
+- 💾 **Export**: Data export and reporting capabilities
+
+### **Command-Line Viewer**
+Simple terminal-based viewer for quick exploration:
+
+```bash
+# Run the simple viewer
+python simple_chromadb_viewer.py
+```
+
+**Features:**
+- Basic statistics and summaries
+- Document listing and exploration
+- Semantic search functionality
+- JSON export capabilities
+- Interactive command-line interface
 
 ## 🔮 Future Enhancements
 

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help - LegendaryCorp AI Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .help-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .feature-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-database me-2"></i>
+                LegendaryCorp AI Assistant
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-comments me-1"></i>Chat</a>
+                <a class="nav-link" href="/visualizer"><i class="fas fa-chart-pie me-1"></i>Visualizer</a>
+                <a class="nav-link" href="/visualizer/documents"><i class="fas fa-file-alt me-1"></i>Documents</a>
+                <a class="nav-link" href="/visualizer/search"><i class="fas fa-search me-1"></i>Search</a>
+                <a class="nav-link" href="/visualizer/explore"><i class="fas fa-compass me-1"></i>Explore</a>
+                <a class="nav-link active" href="/help"><i class="fas fa-question-circle me-1"></i>Help</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="display-4 text-center mb-3">
+                    <i class="fas fa-question-circle text-primary me-3"></i>
+                    Help & Documentation
+                </h1>
+                <p class="lead text-center text-muted">
+                    Learn how to use the LegendaryCorp AI Assistant and ChromaDB Visualizer
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="help-section">
+            <h3><i class="fas fa-rocket me-2 text-primary"></i>Quick Start</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>🚀 Getting Started</h5>
+                    <ol>
+                        <li>Start the application: <code>python app.py</code></li>
+                        <li>Open your browser to <code>http://localhost:5252</code></li>
+                        <li>Use the chat interface to ask questions</li>
+                        <li>Explore your data with the visualizer tools</li>
+                    </ol>
+                </div>
+                <div class="col-md-6">
+                    <h5>🔧 Prerequisites</h5>
+                    <ul>
+                        <li>Python 3.12+</li>
+                        <li>pipenv for dependency management</li>
+                        <li>Documents in the <code>legendary-docs/</code> folder</li>
+                        <li>ChromaDB initialized with <code>python init_vectordb.py</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Overview -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="fas fa-comments fa-2x mb-2"></i>
+                    <h5>AI Chat Interface</h5>
+                    <p class="mb-0">Ask questions and get intelligent answers based on your documents</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="fas fa-chart-pie fa-2x mb-2"></i>
+                    <h5>Data Visualization</h5>
+                    <p class="mb-0">Interactive charts and graphs for understanding your data</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <i class="fas fa-search fa-2x mb-2"></i>
+                    <h5>Semantic Search</h5>
+                    <p class="mb-0">Find relevant documents using AI-powered search</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application URLs -->
+        <div class="help-section">
+            <h3><i class="fas fa-link me-2 text-primary"></i>Application URLs</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Main Interface</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Chat Interface:</strong> 
+                            <a href="/" target="_blank">http://localhost:5252/</a>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Visualizer Dashboard:</strong> 
+                            <a href="/visualizer" target="_blank">http://localhost:5252/visualizer</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>Visualizer Tools</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <strong>Documents Browser:</strong> 
+                            <a href="/visualizer/documents" target="_blank">http://localhost:5252/visualizer/documents</a>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Search Interface:</strong> 
+                            <a href="/visualizer/search" target="_blank">http://localhost:5252/visualizer/search</a>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Data Explorer:</strong> 
+                            <a href="/visualizer/explore" target="_blank">http://localhost:5252/visualizer/explore</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Examples -->
+        <div class="help-section">
+            <h3><i class="fas fa-lightbulb me-2 text-primary"></i>Usage Examples</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>💬 Chat Questions</h5>
+                    <ul>
+                        <li>"What is our remote work policy?"</li>
+                        <li>"How do I onboard as a new employee?"</li>
+                        <li>"What products do we offer?"</li>
+                        <li>"What are the technical requirements?"</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>🔍 Search Queries</h5>
+                    <ul>
+                        <li>Search for "remote work" in policies</li>
+                        <li>Find documents about "employee benefits"</li>
+                        <li>Look for "technical specifications"</li>
+                        <li>Search "product pricing" information</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="help-section">
+            <h3><i class="fas fa-tools me-2 text-primary"></i>Troubleshooting</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Common Issues</h5>
+                    <ul>
+                        <li><strong>ChromaDB Error:</strong> Run <code>python init_vectordb.py</code></li>
+                        <li><strong>No Documents:</strong> Check <code>legendary-docs/</code> folder</li>
+                        <li><strong>Port Conflict:</strong> Change port in <code>app.py</code></li>
+                        <li><strong>Memory Issues:</strong> Reduce chunk size in settings</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>Debug Mode</h5>
+                    <p>Run with debug mode for detailed error messages:</p>
+                    <code>export FLASK_ENV=development<br>python app.py</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support -->
+        <div class="help-section">
+            <h3><i class="fas fa-life-ring me-2 text-primary"></i>Support</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Getting Help</h5>
+                    <ul>
+                        <li>Check the troubleshooting section above</li>
+                        <li>Review the README.md file</li>
+                        <li>Check existing GitHub issues</li>
+                        <li>Create a new issue with details</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5>Documentation</h5>
+                    <ul>
+                        <li><strong>README.md:</strong> Complete project documentation</li>
+                        <li><strong>Code Comments:</strong> Inline documentation</li>
+                        <li><strong>Test Files:</strong> Examples in <code>test/</code> folder</li>
+                        <li><strong>API Endpoints:</strong> RESTful API documentation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

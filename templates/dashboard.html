@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChromaDB Visualizer - LegendaryCorp</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .category-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid #667eea;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #667eea;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        .search-box {
+            background: white;
+            border-radius: 25px;
+            padding: 15px 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-database me-2"></i>
+                ChromaDB Visualizer
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-comments me-1"></i>Chat</a>
+                <a class="nav-link active" href="/visualizer"><i class="fas fa-chart-pie me-1"></i>Dashboard</a>
+                <a class="nav-link" href="/visualizer/documents"><i class="fas fa-file-alt me-1"></i>Documents</a>
+                <a class="nav-link" href="/visualizer/search"><i class="fas fa-search me-1"></i>Search</a>
+                <a class="nav-link" href="/visualizer/explore"><i class="fas fa-compass me-1"></i>Explore</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="display-4 text-center mb-3">
+                    <i class="fas fa-chart-line text-primary me-3"></i>
+                    ChromaDB Dashboard
+                </h1>
+                <p class="lead text-center text-muted">
+                    Visualize and explore your LegendaryCorp document database
+                </p>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="search-box">
+                    <div class="input-group">
+                        <input type="text" id="searchInput" class="form-control border-0" 
+                               placeholder="Search your documents..." aria-label="Search documents">
+                        <button class="btn btn-primary" type="button" onclick="performSearch()">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-cubes fa-2x mb-2"></i>
+                    <h3 id="totalChunks">-</h3>
+                    <p class="mb-0">Total Chunks</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-folder fa-2x mb-2"></i>
+                    <h3 id="totalCategories">-</h3>
+                    <p class="mb-0">Categories</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-file fa-2x mb-2"></i>
+                    <h3 id="totalFiles">-</h3>
+                    <p class="mb-0">Files</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card text-center">
+                    <i class="fas fa-ruler-horizontal fa-2x mb-2"></i>
+                    <h3 id="avgChunkSize">-</h3>
+                    <p class="mb-0">Avg Chunk Size</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Category Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>File Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="fileChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Details -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Category Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="categoryDetails" class="row">
+                            <!-- Category cards will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Results Modal -->
+        <div class="modal fade" id="searchModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Search Results</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="searchResults">
+                        <!-- Search results will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let categoryChart, fileChart;
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/visualizer/stats');
+                const stats = await response.json();
+                
+                if (stats.error) {
+                    console.error('Error loading stats:', stats.error);
+                    return;
+                }
+                
+                updateStatistics(stats);
+                createCharts(stats);
+                populateCategoryDetails(stats);
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Update statistics cards
+        function updateStatistics(stats) {
+            document.getElementById('totalChunks').textContent = stats.total_chunks;
+            document.getElementById('totalCategories').textContent = Object.keys(stats.categories).length;
+            document.getElementById('totalFiles').textContent = Object.keys(stats.files).length;
+            document.getElementById('avgChunkSize').textContent = stats.avg_chunk_size + ' chars';
+        }
+
+        // Create charts
+        function createCharts(stats) {
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(stats.categories),
+                    datasets: [{
+                        data: Object.values(stats.categories),
+                        backgroundColor: [
+                            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // File Chart
+            const fileCtx = document.getElementById('fileChart').getContext('2d');
+            const sortedFiles = Object.entries(stats.files).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            
+            fileChart = new Chart(fileCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedFiles.map(([file, _]) => file),
+                    datasets: [{
+                        label: 'Chunks',
+                        data: sortedFiles.map(([_, count]) => count),
+                        backgroundColor: '#667eea',
+                        borderColor: '#5a6fd8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Populate category details
+        function populateCategoryDetails(stats) {
+            const container = document.getElementById('categoryDetails');
+            container.innerHTML = '';
+
+            Object.entries(stats.categories).forEach(([category, count]) => {
+                const card = document.createElement('div');
+                card.className = 'col-md-4 mb-3';
+                card.innerHTML = `
+                    <div class="category-card">
+                        <h6 class="text-primary mb-2">
+                            <i class="fas fa-folder me-2"></i>${category}
+                        </h6>
+                        <p class="mb-1"><strong>Chunks:</strong> ${count}</p>
+                        <p class="mb-0"><strong>Percentage:</strong> ${((count / stats.total_chunks) * 100).toFixed(1)}%</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Perform search
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            try {
+                const response = await fetch(`/api/visualizer/search?q=${encodeURIComponent(query)}&limit=10`);
+                const results = await response.json();
+                
+                displaySearchResults(query, results);
+                
+                // Show modal
+                new bootstrap.Modal(document.getElementById('searchModal')).show();
+                
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+
+        // Display search results
+        function displaySearchResults(query, results) {
+            const container = document.getElementById('searchResults');
+            
+            if (results.length === 0) {
+                container.innerHTML = '<p class="text-muted">No results found for your query.</p>';
+                return;
+            }
+
+            let html = `<h6 class="mb-3">Found ${results.length} results for "${query}"</h6>`;
+            
+            results.forEach((result, index) => {
+                html += `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0">${result.metadata.title || 'No Title'}</h6>
+                                <span class="badge bg-primary">${result.similarity}</span>
+                            </div>
+                            <p class="text-muted small mb-2">
+                                <i class="fas fa-file me-1"></i>${result.metadata.file} | 
+                                <i class="fas fa-folder me-1"></i>${result.metadata.category}
+                            </p>
+                            <p class="card-text">${result.content_preview}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Enter key search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Load dashboard on page load
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>

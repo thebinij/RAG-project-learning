@@ -30,7 +30,7 @@ class ChatEngine:
 
 Your knowledge base includes:
 - Employee handbook (pet policy, remote work, benefits)
-- Product specifications (CloudSync Pro, DataVault)
+- Product specifications
 - Meeting notes and decisions
 - Customer FAQs
 
