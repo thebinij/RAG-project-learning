@@ -14,7 +14,7 @@ console = Console()
 
 def setup_logging():
     """Setup structured logging and rich console output"""
-    
+
     # Configure structured logging
     structlog.configure(
         processors=[
@@ -26,25 +26,25 @@ def setup_logging():
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
             structlog.processors.UnicodeDecoder(),
-            structlog.processors.JSONRenderer()
+            structlog.processors.JSONRenderer(),
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
-    
+
     # Configure rich logging
     logging.basicConfig(
         level=getattr(logging, settings.log_level.upper()),
         format="%(message)s",
         datefmt="[%X]",
-        handlers=[RichHandler(rich_tracebacks=True)]
+        handlers=[RichHandler(rich_tracebacks=True)],
     )
-    
+
     # Set log level
     logging.getLogger().setLevel(getattr(logging, settings.log_level.upper()))
-    
+
     return structlog.get_logger()
 
 

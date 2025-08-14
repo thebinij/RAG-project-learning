@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 class DocumentResponse(BaseModel):
     """Document response model"""
+
     id: int
     content: str
     metadata: Dict[str, Any]
@@ -16,6 +17,7 @@ class DocumentResponse(BaseModel):
 
 class SearchResponse(BaseModel):
     """Search response model"""
+
     id: int
     content: str
     metadata: Dict[str, Any]
@@ -25,6 +27,7 @@ class SearchResponse(BaseModel):
 
 class StatsResponse(BaseModel):
     """Database statistics response model"""
+
     total_chunks: int
     categories: Dict[str, int]
     files: Dict[str, int]

@@ -19,5 +19,5 @@ if __name__ == "__main__":
         port=settings.port,
         reload=settings.debug,
         log_level=settings.log_level.lower(),
-        access_log=True
+        access_log=True,
     )

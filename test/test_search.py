@@ -2,7 +2,7 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 
 print("LegendaryCorp SEMANTIC SEARCH ENGINE")
-print("="*50)
+print("=" * 50)
 
 # Initialize
 print(" Connecting to Knowledge Base...")
@@ -10,17 +10,17 @@ client = chromadb.PersistentClient(path="./chroma_db")
 collection = client.get_collection("LegendaryCorp_docs")
 
 print(" Loading AI Understanding...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer("all-MiniLM-L6-v2")
 print(" Search Engine Ready!\n")
 
 # CEO's test queries
 queries = [
     "What is the pet policy at LegendaryCorp?",
     "Tell me about CloudSync Pro features",
-    "How many days of remote work are allowed?"
+    "How many days of remote work are allowed?",
 ]
 
-results_file = open('./search-results.txt', 'w')
+results_file = open("./search-results.txt", "w")
 
 for query in queries:
     print(f" Query: '{query}'")
@@ -31,20 +31,19 @@ for query in queries:
     query_embedding = model.encode(query).tolist()
 
     # Semantic search!
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=3
-    )
+    results = collection.query(query_embeddings=[query_embedding], n_results=3)
 
     # Display results
     print(" Top Results (by semantic similarity):")
-    for i, (doc, meta) in enumerate(zip(results['documents'][0], results['metadatas'][0])):
+    for i, (doc, meta) in enumerate(
+        zip(results["documents"][0], results["metadatas"][0])
+    ):
         relevance = 100 - (i * 15)  # Simulated relevance
         print(f"\n  {i+1}. [{meta['category']}] {meta['file']} ({relevance}% match)")
         print(f"     Preview: '{doc[:80]}...'")
         results_file.write(f"RESULT:{meta['category']}/{meta['file']}\n")
 
-    print("\n" + "="*50 + "\n")
+    print("\n" + "=" * 50 + "\n")
 
 results_file.close()
 

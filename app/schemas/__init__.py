@@ -7,9 +7,9 @@ from .visualizer import DocumentResponse, SearchResponse, StatsResponse
 
 __all__ = [
     "ChatRequest",
-    "ChatResponse", 
+    "ChatResponse",
     "StatusResponse",
     "DocumentResponse",
     "SearchResponse",
-    "StatsResponse"
+    "StatsResponse",
 ]

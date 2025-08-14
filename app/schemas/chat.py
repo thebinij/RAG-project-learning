@@ -8,11 +8,13 @@ from pydantic import BaseModel, Field
 
 class ChatRequest(BaseModel):
     """Chat request model"""
+
     message: str = Field(..., min_length=1, max_length=1000, description="User message")
 
 
 class ChatResponse(BaseModel):
     """Chat response model"""
+
     response: str
     sources: List[Dict[str, Any]]
     confidence: float
@@ -21,6 +23,7 @@ class ChatResponse(BaseModel):
 
 class StatusResponse(BaseModel):
     """System status response model"""
+
     status: str
     documents: int
     chunks: int

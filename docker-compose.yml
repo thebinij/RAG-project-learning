@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   ai-assistant:
     build: .
@@ -7,13 +5,9 @@ services:
     ports:
       - "5252:5252"
     environment:
-      - LOG_LEVEL=INFO
-      - CHROMA_DB_VISUALIZER=true
+      - LOG_LEVEL=WARN
+      - CHROMA_DB_VISUALIZER=false
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENAI_API_BASE=${OPENAI_API_BASE:-https://api.openai.com/v1}
-      - TOKENIZERS_PARALLELISM=false
-      - HF_HUB_DISABLE_TELEMETRY=1
-      - TRANSFORMERS_OFFLINE=0
       - KNOWLEDGE_DOCS_PATH=/app/knowledge-docs
       - CHROMA_DB_PATH=/app/chroma_db
     volumes:

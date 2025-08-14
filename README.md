@@ -9,6 +9,7 @@ A powerful Retrieval-Augmented Generation (RAG) system built with **FastAPI** an
 - **Vector Database**: ChromaDB for efficient semantic search
 - **Document Processing**: Automatic chunking and embedding of documents
 - **Semantic Search**: Sentence transformers for intelligent document retrieval
+- **API Documentation**: Interactive Swagger UI and ReDoc with configurable endpoints
 - **Production Ready**: Structured logging, health checks, Docker deployment
 - **Open Source**: Built entirely with open-source technologies to avoid vendor lock-in
 
@@ -174,31 +175,19 @@ python init_vectordb.py
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root by copying the example file:
 
 ```bash
-# Application
-DEBUG=false
-LOG_LEVEL=INFO
-HOST=0.0.0.0
-PORT=5252
-
-# ChromaDB Visualizer
-CHROMA_DB_VISUALIZER=true
-
-# OpenAI
-OPENAI_API_KEY=your_openai_api_key
-OPENAI_API_BASE=https://api.openai.com/v1
-
-# HuggingFace
-TOKENIZERS_PARALLELISM=false
-HF_HUB_DISABLE_TELEMETRY=1
-TRANSFORMERS_OFFLINE=0
-
-# Security
-CORS_ORIGINS=["*"]
-CORS_CREDENTIALS=true
+cp .env.example .env
 ```
+
+Then edit the `.env` file and update the values according to your environment. The most important variables to set are:
+
+- `OPENAI_API_KEY` - Your OpenAI API key (required for chat functionality)
+- `DEBUG` - Set to `false` in production
+- `LOG_LEVEL` - Set to `INFO` or `WARNING` in production
+
+> **Note**: Never commit `.env` files to version control. See `.env.example` for the complete list of available environment variables.
 
 ### Production Settings
 
@@ -212,10 +201,11 @@ The application automatically detects production vs development environments:
 Once running, access the application at:
 
 - **Chat Interface**: `http://localhost:5252/` - Main AI chat interface
-- **API Documentation**: `http://localhost:5252/docs` - Interactive API docs (Swagger UI)
-- **ReDoc Documentation**: `http://localhost:5252/redoc` - Alternative API docs
+- **API Documentation**: `http://localhost:5252/redoc` - Interactive API docs (ReDoc) ⚙️
 - **Health Check**: `http://localhost:5252/health` - Application health status
 - **ChromaDB Visualizer**: `http://localhost:5252/visualizer` - Database visualization dashboard
+
+> ⚙️ **Configurable**: ReDoc is enabled by default and can be disabled via ENABLE_REDOC environment variable
 
 ## 🐳 Docker Deployment
 
