@@ -1,7 +1,8 @@
 import os
 
 print(" DOCUMENT CHUNKING ENGINE")
-print("="*40)
+print("=" * 40)
+
 
 def chunk_text(text, size=500, overlap=100):
     """Smart chunking with overlap for context preservation"""
@@ -19,6 +20,7 @@ def chunk_text(text, size=500, overlap=100):
         start += size - overlap
 
     return chunks
+
 
 # Process sample document
 sample_doc = """LegendaryCorp Pet Policy: 
@@ -38,18 +40,18 @@ Unlimited PTO after first year.
 Annual learning budget of $2,000."""
 
 print(f" Original document: {len(sample_doc)} characters")
-print("-"*40)
+print("-" * 40)
 
 chunks = chunk_text(sample_doc, size=500, overlap=100)
 
 print(f" Created {len(chunks)} chunks")
-print("-"*40)
+print("-" * 40)
 
 for i, chunk in enumerate(chunks, 1):
     print(f"\nChunk {i} ({len(chunk)} chars):")
     print(f"Preview: {chunk[:60]}...")
 
-print("\n" + "="*40)
+print("\n" + "=" * 40)
 print(" Chunking complete!")
 print(f" Stats: {len(chunks)} chunks from {len(sample_doc)} chars")
 print(" Ready for vectorization!")

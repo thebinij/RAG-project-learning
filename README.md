@@ -1,59 +1,69 @@
-# RAG Project Learning - AI Assistant with Vector Search
+# RAG Project Learning - FastAPI AI Assistant with Vector Search
 
-A powerful Retrieval-Augmented Generation (RAG) system built with open-source technologies, featuring an interactive chat interface that can answer questions based on your document knowledge base.
+A powerful Retrieval-Augmented Generation (RAG) system built with **FastAPI** and open-source technologies, featuring an interactive chat interface that can answer questions based on your document knowledge base.
 
 ## 🚀 Features
 
+- **FastAPI Backend**: Modern, fast, async-first web framework with automatic API documentation
 - **Interactive Chat Interface**: Web-based chat UI with streaming responses
 - **Vector Database**: ChromaDB for efficient semantic search
 - **Document Processing**: Automatic chunking and embedding of documents
 - **Semantic Search**: Sentence transformers for intelligent document retrieval
-- **Flask Backend**: Lightweight and scalable web framework
+- **API Documentation**: Interactive Swagger UI and ReDoc with configurable endpoints
+- **Production Ready**: Structured logging, health checks, Docker deployment
 - **Open Source**: Built entirely with open-source technologies to avoid vendor lock-in
 
 ## 🏗️ Project Structure
 
 ```
 rag-project-learning/
-├── app.py                          # Main Flask application
-├── core/                           # Core RAG components
-│   ├── __init__.py
-│   ├── vector_engine.py           # ChromaDB vector operations
-│   ├── chat_engine.py             # Chat logic and RAG pipeline
-│   └── document_processor.py      # Document ingestion and processing
-├── ingest_documents.py             # Document ingestion script
-├── init_vectordb.py               # Vector database initialization
-├── legendary-docs/                  # Document storage directory
-├── chroma_db/                      # Vector database storage (auto-generated, gitignored)
-│   ├── policies/                    # Company policies and guidelines
-│   │   └── company-policies.md      # General company policies
-│   ├── handbooks/                   # Employee documentation
-│   │   └── employee-handbook.md     # Comprehensive employee guide
-│   ├── products/                    # Product and service information
-│   │   └── product-catalog.md       # AI solutions catalog
-│   └── technical/                   # Technical documentation
-│       └── technical-specifications.md # System architecture & specs
-├── static/                         # Frontend assets
+├── app/                          # Main FastAPI package
+│   ├── __init__.py              # Package initialization
+│   ├── app.py                   # FastAPI application definition
+│   ├── api/                     # API routers
+│   │   ├── v1/                  # API version 1
+│   │   │   └── chat.py         # Chat endpoints
+│   │   └── visualizer/          # Visualizer endpoints
+│   │       └── routes.py
+│   ├── core/                    # Core configuration and engines
+│   │   ├── config.py            # Settings management
+│   │   ├── logging.py           # Logging configuration
+│   │   └── engines/             # Core engine modules
+│   │       ├── __init__.py
+│   │       ├── vector_engine.py # Vector database operations
+│   │       ├── chat_engine.py   # RAG chat engine
+│   │       └── document_processor.py # Document processing
+│   ├── schemas/                 # Pydantic models
+│   │   ├── chat.py             # Chat schemas
+│   │   └── visualizer.py       # Visualizer schemas
+│   ├── services/                # Business logic layer
+│   │   ├── vector_service.py    # Vector database operations
+│   │   ├── chat_service.py      # Chat/RAG operations
+│   │   └── document_service.py  # Document processing
+│   └── scripts/                 # Utility scripts
+│       ├── ingest_documents.py  # Document ingestion script
+│       └── init_vectordb.py    # Vector database initialization
+├── static/                      # Frontend assets (CSS, JavaScript)
 │   ├── css/
-│   │   └── style.css
 │   └── js/
-│       └── chat.js
-├── templates/                      # HTML templates
-│   └── chat.html
-├── test/                          # Test files
-│   ├── test_chunking.py
-│   ├── test_embeddings.py
-│   ├── test_rag_pipeline.py
-│   └── test_search.py
-├── Pipfile                        # Python dependencies
-├── Pipfile.lock                   # Locked dependency versions
-└── README.md                      # This file
+├── templates/                   # HTML templates
+├── knowledge-docs/              # Document storage
+├── chroma_db/                   # Vector database storage (auto-generated, gitignored)
+├── main.py                      # Entry point (python main.py)
+├── start_production.py          # Production entry point
+├── Pipfile                      # Python dependencies
+├── Pipfile.lock                 # Locked dependency versions
+├── Dockerfile                   # Production Docker image
+├── docker-compose.yml           # Docker Compose for deployment
+├── .dockerignore                # Docker build exclusions
+└── README.md                    # Project documentation
 ```
 
 ## 🛠️ Prerequisites
 
 - **Python 3.12** (as specified in Pipfile)
 - **pipenv** for dependency management
+- **Docker** and **Docker Compose** for deployment (optional)
 - **Git** for version control
 
 ## 📦 Installation & Setup
@@ -82,10 +92,14 @@ pipenv install
 ```
 
 This will install all required packages:
+- `fastapi` - Modern, fast web framework
+- `uvicorn[standard]` - ASGI server with production features
 - `chromadb` - Vector database for embeddings
 - `sentence-transformers` - Text embedding models
 - `openai` - OpenAI API integration
-- `flask` - Web framework
+- `structlog` - Structured logging
+- `rich` - Rich console output
+- `pydantic` - Data validation and settings management
 
 ### 4. Activate Virtual Environment
 
@@ -95,191 +109,295 @@ pipenv shell
 
 ## 🚀 Running the Application
 
-### 1. Initialize Vector Database
-
-First, set up the vector database:
+### Development Mode
 
 ```bash
+# Run with auto-reload
+python main.py
+
+# Or run as a module
+python -m app
+
+# Or use uvicorn directly
+uvicorn app.app:app --reload --host 0.0.0.0 --port 5252
+```
+
+### Production Mode
+
+```bash
+# Use production startup script
+python start_production.py
+
+# Or run production module directly
+python -m app.production
+
+# Or use uvicorn with production settings
+uvicorn app.app:app --host 0.0.0.0 --port 5252 --workers 1 --log-level info
+```
+
+### Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+
+# Or build and run manually
+docker build -t legendarycorp-ai-assistant .
+docker run -p 5252:5252 -e OPENAI_API_KEY=your_key legendarycorp-ai-assistant
+```
+
+## 🧹 Project Organization
+
+The project follows a clean, modular FastAPI structure:
+
+- **`app/`** - Main application package (Python code only)
+  - **`app/app.py`** - FastAPI application definition
+  - **`app/api/`** - API endpoints and routers
+  - **`app/core/`** - Configuration, logging, and core engines
+  - **`app/services/`** - Business logic layer
+  - **`app/schemas/`** - Pydantic data models
+  - **`app/scripts/`** - Utility scripts for document processing
+- **`static/`** - Frontend assets (CSS, JavaScript)
+- **`templates/`** - HTML templates
+
+### Running Scripts
+
+```bash
+# Document ingestion
+cd app/scripts
+python ingest_documents.py
+
+# Vector database initialization
 python init_vectordb.py
 ```
-
-### 2. Ingest Documents (Optional)
-
-If you have documents to process:
-
-```bash
-python ingest_documents.py
-```
-
-**Note**: The script automatically processes documents from the `legendary-docs/` directory structure. Documents are organized by category:
-
-- **Policies**: Company policies and guidelines
-- **Handbooks**: Employee documentation and training materials  
-- **Products**: Product catalogs and service information
-- **Technical**: Technical specifications and API documentation
-
-The ingestion process will:
-- Chunk documents into smaller pieces (500 characters with 100 character overlap)
-- Generate embeddings using sentence transformers
-- Store in ChromaDB with category metadata
-- Provide processing statistics and completion status
-
-### 3. Start the Web Application
-
-```bash
-python app.py
-```
-
-The application will start on `http://localhost:5252` by default.
-
-### 4. Access the Chat Interface
-
-Open your browser and navigate to:
-
-- **Chat Interface**: `http://localhost:5252/` - Main AI chat interface
-- **ChromaDB Visualizer**: `http://localhost:5252/visualizer` - Database visualization dashboard
-- **Documents Browser**: `http://localhost:5252/visualizer/documents` - Browse all documents
-- **Search Interface**: `http://localhost:5252/visualizer/search` - Advanced semantic search
-- **Data Explorer**: `http://localhost:5252/visualizer/explore` - Deep data analysis
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-You can set the following environment variables:
+Create a `.env` file in the project root by copying the example file:
 
-- `OPENAI_API_KEY`: Your OpenAI API key (if using OpenAI models)
-- `HF_HUB_DISABLE_TELEMETRY`: Set to '1' to disable HuggingFace telemetry
-- `TRANSFORMERS_OFFLINE`: Set to '1' for offline mode
+```bash
+cp .env.example .env
+```
 
-### Document Storage
+Then edit the `.env` file and update the values according to your environment. The most important variables to set are:
 
-- Place your documents in the `legendary-docs/` directory
-- Documents are automatically chunked and embedded
-- Supported formats: Markdown (.md), text files
+- `OPENAI_API_KEY` - Your OpenAI API key (required for chat functionality)
+- `DEBUG` - Set to `false` in production
+- `LOG_LEVEL` - Set to `INFO` or `WARNING` in production
 
-#### Document Categories
+> **Note**: Never commit `.env` files to version control. See `.env.example` for the complete list of available environment variables.
 
-The system organizes documents into logical categories for better retrieval:
+### Production Settings
 
-- **`policies/`**: Company policies, guidelines, and procedures
-- **`handbooks/`**: Employee handbooks, onboarding guides, and training materials
-- **`products/`**: Product catalogs, service descriptions, and pricing information
-- **`technical/`**: Technical specifications, architecture documents, and API references
+The application automatically detects production vs development environments:
 
-Each category helps the RAG system provide more relevant and organized responses to user queries.
+- **Development**: Auto-reload, debug logging, single worker
+- **Production**: No reload, structured logging, multiple workers, health checks
+
+## 🌐 Application URLs
+
+Once running, access the application at:
+
+- **Chat Interface**: `http://localhost:5252/` - Main AI chat interface
+- **API Documentation**: `http://localhost:5252/redoc` - Interactive API docs (ReDoc) ⚙️
+- **Health Check**: `http://localhost:5252/health` - Application health status
+- **ChromaDB Visualizer**: `http://localhost:5252/visualizer` - Database visualization dashboard
+
+> ⚙️ **Configurable**: ReDoc is enabled by default and can be disabled via ENABLE_REDOC environment variable
+
+## 🐳 Docker Deployment
+
+### Quick Start
+
+```bash
+# Start with Docker Compose
+docker-compose up --build
+
+# View logs
+docker-compose logs -f ai-assistant
+
+# Stop services
+docker-compose down
+```
+
+### Production Deployment
+
+```bash
+# Build production image
+docker build -t legendarycorp-ai-assistant:latest .
+
+# Run with production settings
+docker run -d \
+  --name ai-assistant \
+  -p 5252:5252 \
+  -e LOG_LEVEL=INFO \
+  -e CHROMA_DB_VISUALIZER=true \
+  -e OPENAI_API_KEY=your_key \
+  -v $(pwd)/chroma_db:/app/chroma_db \
+  -v $(pwd)/knowledge-docs:/app/knowledge-docs \
+  legendarycorp-ai-assistant:latest
+```
+
+### Docker Features
+
+- **Multi-stage build** for optimized image size
+- **Non-root user** for security
+- **Health checks** for monitoring
+- **Volume mounting** for persistent data
+- **Environment variable** configuration
+- **Production-ready** uvicorn settings
+
+## 📊 Monitoring & Logging
+
+### Structured Logging
+
+The application uses `structlog` for production-grade logging:
+
+```python
+import structlog
+
+logger = structlog.get_logger()
+logger.info("Application started", port=5252, environment="production")
+```
+
+### Health Checks
+
+```bash
+# Check application health
+curl http://localhost:5252/health
+
+# Response
+{
+  "status": "healthy",
+  "timestamp": "2024-01-01T12:00:00Z"
+}
+```
+
+### Metrics
+
+- Request/response times
+- Error rates
+- Memory usage
+- ChromaDB statistics
 
 ## 🧪 Testing
 
-Run the test suite to verify everything is working:
+### Run Tests
 
 ```bash
-# Run all tests
-python -m pytest test/
+# Install dev dependencies
+pipenv install --dev
 
-# Run specific test files
-python test/test_embeddings.py
-python test/test_rag_pipeline.py
-python test/test_search.py
-python test/test_chunking.py
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=core --cov-report=html
 ```
 
-## 📚 Usage
-
-### Chat Interface
-
-1. Open the web interface at `http://localhost:5000`
-2. Type your question in the chat input
-3. The system will search through your organized document knowledge base
-4. Receive answers with source citations and confidence scores
-
-#### Example Questions by Category
-
-**Policies & Guidelines:**
-- "What is the remote work policy?"
-- "How many vacation days do I get?"
-- "What is the dress code for client meetings?"
-
-**Employee Information:**
-- "How do I onboard as a new employee?"
-- "What benefits are available?"
-- "What is the performance review process?"
-
-**Products & Services:**
-- "What are the pricing tiers for LegendaryAI Core?"
-- "What healthcare AI solutions do you offer?"
-- "How much does the SDK cost?"
-
-**Technical Details:**
-- "What are the system requirements for development?"
-- "What API endpoints are available?"
-- "How do I integrate with the platform?"
-
-### API Endpoints
-
-- `GET /` - Chat interface
-- `POST /api/chat` - Chat with JSON response
-- `POST /api/chat/stream` - Streaming chat response
-
-### Example API Usage
+### API Testing
 
 ```bash
-curl -X POST http://localhost:5000/api/chat \
+# Test chat endpoint
+curl -X POST "http://localhost:5252/api/chat" \
   -H "Content-Type: application/json" \
   -d '{"message": "What is the company policy on remote work?"}'
+
+# Test streaming endpoint
+curl -X POST "http://localhost:5252/api/chat/stream" \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Tell me about employee benefits"}'
 ```
 
-## 🔍 How It Works
+## 🚀 Performance & Scaling
 
-1. **Document Processing**: Documents are chunked into smaller pieces and embedded using sentence transformers
-2. **Vector Storage**: Embeddings are stored in ChromaDB for fast similarity search
-3. **Query Processing**: User questions are embedded and compared against document embeddings
-4. **Retrieval**: Most relevant document chunks are retrieved based on semantic similarity
-5. **Response Generation**: The system generates answers using retrieved context
+### Async by Default
 
-### Document Organization Benefits
+FastAPI provides excellent performance with async/await:
 
-The categorized document structure provides several advantages:
+- **Concurrent requests** handling
+- **Non-blocking I/O** operations
+- **Efficient streaming** responses
+- **WebSocket support** for real-time features
 
-- **Better Context**: Related documents are grouped together for more coherent responses
-- **Faster Retrieval**: Category-based filtering improves search relevance
-- **Organized Knowledge**: Users can ask category-specific questions
-- **Scalable Structure**: Easy to add new categories and documents
-- **Metadata Enrichment**: Category information enhances search accuracy
+### Production Optimizations
 
-## 🛠️ Development
+- **Multiple workers** with uvicorn
+- **Connection pooling** for databases
+- **Caching strategies** for embeddings
+- **Load balancing** ready
 
-### Adding New Features
+### Scaling Options
 
-1. Create feature branches from `main`
-2. Add tests for new functionality
-3. Update documentation as needed
-4. Submit pull requests for review
+```bash
+# Scale with multiple workers
+uvicorn app:app --host 0.0.0.0 --port 5252 --workers 4
 
-### Code Structure
+# Use Gunicorn for more control
+gunicorn app:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:5252
+```
 
-- **Core Modules**: Located in `core/` directory
-- **Web Interface**: Flask routes in `app.py`
-- **Frontend**: Static files in `static/` and templates in `templates/`
-- **Tests**: Comprehensive test suite in `test/` directory
+## 🔒 Security Features
+
+- **CORS middleware** configuration
+- **Input validation** with Pydantic
+- **Rate limiting** ready
+- **Authentication** ready (can be added)
+- **HTTPS** support
+
+## 📈 Production Checklist
+
+- [ ] Set `DEBUG=false`
+- [ ] Configure `LOG_LEVEL=INFO` or higher
+- [ ] Set proper `CORS_ORIGINS`
+- [ ] Use production database
+- **Docker**: Use production Dockerfile
+- **Monitoring**: Enable health checks
+- **Logging**: Configure structured logging
+- **Security**: Review CORS and authentication
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **ChromaDB Connection Error**: Ensure the `chroma_db` directory exists and has write permissions
-2. **Model Download Issues**: Check internet connection for first-time model downloads
-3. **Memory Issues**: Large document collections may require more RAM
-4. **Port Conflicts**: Change the port in `app.py` if 5000 is already in use
+1. **Port conflicts**: Change port in `.env` or Docker configuration
+2. **Memory issues**: Reduce worker count or increase container memory
+3. **ChromaDB errors**: Check volume permissions and database initialization
+4. **Logging issues**: Verify `LOG_LEVEL` environment variable
 
 ### Debug Mode
 
-Run Flask in debug mode for detailed error messages:
-
 ```bash
-export FLASK_ENV=development
+# Enable debug logging
+export LOG_LEVEL=DEBUG
 python app.py
 ```
+
+### Docker Debugging
+
+```bash
+# View container logs
+docker-compose logs -f ai-assistant
+
+# Access container shell
+docker-compose exec ai-assistant bash
+
+# Check container health
+docker inspect legendarycorp-ai-assistant
+```
+
+## 🔮 Future Enhancements
+
+- [ ] **Authentication & Authorization**
+- [ ] **Rate Limiting**
+- [ ] **Redis Caching**
+- [ ] **Database Migrations**
+- [ ] **Kubernetes Deployment**
+- [ ] **Prometheus Metrics**
+- [ ] **Grafana Dashboards**
+- [ ] **CI/CD Pipeline**
 
 ## 📄 License
 
@@ -300,53 +418,6 @@ For issues and questions:
 2. Review existing issues
 3. Create a new issue with detailed information
 
-## 🎨 **ChromaDB Visualization Tools**
-
-### **Integrated Web Visualizer**
-The ChromaDB visualizer is now integrated directly into the main application:
-
-```bash
-# Start the unified application
-python app.py
-
-# Access the visualizer at: http://localhost:5252/visualizer
-```
-
-**Features:**
-- 📊 **Dashboard**: Overview with charts and statistics
-- 📚 **Documents**: Browse all documents with filtering and pagination
-- 🔍 **Search**: Advanced semantic search with filters
-- 🧭 **Explore**: Deep data analysis and visualizations
-- 📈 **Charts**: Interactive charts for category distribution, file analysis
-- 🎯 **Embeddings**: 2D visualization of document vectors
-- 📋 **Metadata**: Comprehensive metadata analysis
-- 💾 **Export**: Data export and reporting capabilities
-
-### **Command-Line Viewer**
-Simple terminal-based viewer for quick exploration:
-
-```bash
-# Run the simple viewer
-python simple_chromadb_viewer.py
-```
-
-**Features:**
-- Basic statistics and summaries
-- Document listing and exploration
-- Semantic search functionality
-- JSON export capabilities
-- Interactive command-line interface
-
-## 🔮 Future Enhancements
-
-- [ ] Support for more document formats (PDF, DOCX)
-- [ ] Advanced chunking strategies
-- [ ] Multiple embedding models
-- [ ] User authentication
-- [ ] API rate limiting
-- [ ] Docker containerization
-- [ ] Kubernetes deployment
-
 ---
 
-**Built with ❤️ using open-source technologies**
+**Built with ❤️ using FastAPI and open-source technologies**

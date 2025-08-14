@@ -1,15 +1,15 @@
-from sentence_transformers import SentenceTransformer
 import numpy as np
+from sentence_transformers import SentenceTransformer
 
 print(" Loading Google's AI Brain (all-MiniLM-L6-v2)...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer("all-MiniLM-L6-v2")
 print(" Brain loaded! 90M parameters ready!\n")
 
 # LegendaryCorp test sentences
 sentences = [
     "Dogs are allowed in the office on Fridays",
     "Pets can come to work on Furry Fridays",
-    "Remote work policy allows 3 days from home"
+    "Remote work policy allows 3 days from home",
 ]
 
 print(" Converting text to vectors...")
@@ -21,7 +21,7 @@ sim_1_2 = np.dot(embeddings[0], embeddings[1])
 sim_1_3 = np.dot(embeddings[0], embeddings[2])
 
 print(" Semantic Similarity Analysis:")
-print("="*50)
+print("=" * 50)
 print(f"'Dogs allowed' ←→ 'Pets permitted'")
 print(f"Similarity: {sim_1_2:.3f} (Very Related! )\n")
 

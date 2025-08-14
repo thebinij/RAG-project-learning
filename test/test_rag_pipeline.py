@@ -2,14 +2,15 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 
 print(" LegendaryCorp RAG PIPELINE TEST")
-print("="*50)
+print("=" * 50)
 
 # Initialize all systems
 print(" Initializing RAG Components...")
 client = chromadb.PersistentClient(path="./chroma_db")
 collection = client.get_collection("LegendaryCorp_docs")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer("all-MiniLM-L6-v2")
 print(" All systems operational!\n")
+
 
 def test_rag_pipeline(question):
     """Test the complete RAG Pipeline"""
@@ -23,17 +24,14 @@ def test_rag_pipeline(question):
     query_embedding = model.encode(question).tolist()
     print("  Searching knowledge base...")
 
-    results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=3
-    )
+    results = collection.query(query_embeddings=[query_embedding], n_results=3)
 
     print(f"   Found {len(results['documents'][0])} relevant documents!")
 
     # 2. AUGMENTATION PHASE
     print("\n PHASE 2: AUGMENTATION")
     print("  Preparing context for AI...")
-    context = "\n\n".join(results['documents'][0])
+    context = "\n\n".join(results["documents"][0])
 
     # 3. GENERATION PHASE (Simulated)
     print("\n PHASE 3: GENERATION")
@@ -48,22 +46,23 @@ def test_rag_pipeline(question):
     print("   Response generated!")
 
     return {
-        'question': question,
-        'sources_used': len(results['documents'][0]),
-        'answer': answer
+        "question": question,
+        "sources_used": len(results["documents"][0]),
+        "answer": answer,
     }
 
+
 # Test the pipeline
-print("\n" + "="*50)
+print("\n" + "=" * 50)
 print(" TESTING COMPLETE PIPELINE")
-print("="*50)
+print("=" * 50)
 
 test_question = "What are the benefits of working at LegendaryCorp?"
 result = test_rag_pipeline(test_question)
 
-print("\n" + "="*50)
+print("\n" + "=" * 50)
 print(" PIPELINE RESULTS")
-print("="*50)
+print("=" * 50)
 print(f" Question: {result['question']}")
 print(f" Sources Used: {result['sources_used']} documents")
 print(f" Answer: {result['answer']}")
@@ -75,6 +74,6 @@ print("  • Augmentation: 0.003 seconds")
 print("  • Generation: 0.234 seconds")
 print("  • Total: 0.249 seconds")
 
-print("\n" + "="*50)
+print("\n" + "=" * 50)
 print(" SUCCESS! RAG Pipeline Working!")
-print("="*50)
+print("=" * 50)

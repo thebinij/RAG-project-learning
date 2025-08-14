@@ -3,13 +3,11 @@ from chromadb.config import Settings
 
 print(" Initializing AI Brain...")
 client = chromadb.PersistentClient(
-    path="./chroma_db",
-    settings=Settings(anonymized_telemetry=False)
+    path="./chroma_db", settings=Settings(anonymized_telemetry=False)
 )
 
 collection = client.get_or_create_collection(
-    name="LegendaryCorp_docs",
-    metadata={"hnsw:space": "cosine"}
+    name="LegendaryCorp_docs", metadata={"hnsw:space": "cosine"}
 )
 
 print(f" Brain Created: {collection.name}")

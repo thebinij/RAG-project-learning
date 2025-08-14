@@ -1,10 +1,10 @@
-import os
-import chromadb
-from sentence_transformers import SentenceTransformer
 from pathlib import Path
 
+import chromadb
+from sentence_transformers import SentenceTransformer
+
 print("LegendaryCorp KNOWLEDGE INGESTION SYSTEM")
-print("="*50)
+print("=" * 50)
 
 # Initialize systems
 print("Connecting to AI Brain (from Task 3)...")
@@ -12,7 +12,7 @@ client = chromadb.PersistentClient(path="./chroma_db")
 collection = client.get_collection("LegendaryCorp_docs")
 
 print("Loading Semantic Processor (from Task 5)...")
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer("all-MiniLM-L6-v2")
 print("All systems online!\n")
 
 # Process documents
@@ -20,18 +20,18 @@ print("Beginning knowledge transfer...")
 doc_count = 0
 total_chunks = 0
 
-for category in Path('./legendary-docs').iterdir():
+for category in Path("./knowledge-docs").iterdir():
     if category.is_dir():
         print(f"\nProcessing {category.name}:")
 
-        for doc in category.glob('*.md'):
+        for doc in category.glob("*.md"):
             print(f"  {doc.name}", end="")
 
-            with open(doc, 'r') as f:
+            with open(doc, "r") as f:
                 content = f.read()
 
             # Apply chunking strategy from Task 4!
-            chunks = [content[i:i+500] for i in range(0, len(content), 400)]
+            chunks = [content[i : i + 500] for i in range(0, len(content), 400)]
 
             for i, chunk in enumerate(chunks):
                 doc_id = f"{doc.stem}_{i}"
@@ -44,17 +44,17 @@ for category in Path('./legendary-docs').iterdir():
                     embeddings=[embedding],
                     documents=[chunk],
                     metadatas={
-                        "file": doc.name, 
+                        "file": doc.name,
                         "category": category.name,
-                        "title": doc.stem.replace('-', ' ').replace('_', ' ').title()
-                    }
+                        "title": doc.stem.replace("-", " ").replace("_", " ").title(),
+                    },
                 )
                 total_chunks += 1
 
             doc_count += 1
             print(f" ({len(chunks)} chunks)")
 
-print("\n" + "="*50)
+print("\n" + "=" * 50)
 print(f"INGESTION COMPLETE!")
 print(f"Statistics:")
 print(f"   • Documents processed: {doc_count}")
