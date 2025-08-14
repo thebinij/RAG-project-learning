@@ -7,9 +7,23 @@ name = "pypi"
 chromadb = "*"
 sentence-transformers = "*"
 openai = "*"
-flask = "*"
+fastapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+python-multipart = "*"
+python-jose = {extras = ["cryptography"], version = "*"}
+passlib = {extras = ["bcrypt"], version = "*"}
+structlog = "*"
+rich = "*"
+pydantic = "*"
+pydantic-settings = "*"
 
 [dev-packages]
+pytest = "*"
+pytest-asyncio = "*"
+httpx = "*"
+black = "*"
+isort = "*"
+flake8 = "*"
 
 [requires]
 python_version = "3.12"

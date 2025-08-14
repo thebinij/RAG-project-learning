@@ -11,7 +11,7 @@ import hashlib
 class DocumentProcessor:
     def __init__(self, vector_engine):
         self.vector_engine = vector_engine
-        self.docs_path = Path(__file__).parent.parent.parent / "rag-project-learning/legendary-docs"
+        self.docs_path = Path(__file__).parent.parent.parent.parent / "knowledge-docs"
         
         # Chunking parameters
         self.chunk_size = 500  # characters

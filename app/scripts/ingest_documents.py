@@ -20,7 +20,7 @@ print("Beginning knowledge transfer...")
 doc_count = 0
 total_chunks = 0
 
-for category in Path('./legendary-docs').iterdir():
+for category in Path('./knowledge-docs').iterdir():
     if category.is_dir():
         print(f"\nProcessing {category.name}:")
 
