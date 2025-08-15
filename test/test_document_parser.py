@@ -392,7 +392,7 @@ if __name__ == '__main__':
         print("🎉 ALL TESTS PASSED!")
         print(f"✅ Tests run: {result.testsRun}")
         print("\n💡 Next Steps:")
-        print("   • Test with real documents in your knowledge-docs directory")
+        print("   • Test with real documents in your data/knowledge-docs directory")
         print("   • Run 'python ingest_docs.py' to process documents")
         print("   • The parser supports multiple file formats including PDF, DOCX, CSV, etc.")
     else:

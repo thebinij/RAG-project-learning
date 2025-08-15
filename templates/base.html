@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LegendaryCorp RAG System{% endblock %}</title>
+    
+    <!-- Common CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Base template styles -->
+    <style>
+        /* Mobile navigation improvements */
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                background-color: rgba(33, 37, 41, 0.95);
+                border-radius: 8px;
+                margin-top: 10px;
+                padding: 15px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            }
+            
+            .navbar-nav .nav-link {
+                padding: 12px 15px;
+                border-radius: 6px;
+                margin: 2px 0;
+                transition: all 0.3s ease;
+            }
+            
+            .navbar-nav .nav-link:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .navbar-nav .nav-link.active {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+            
+            .dropdown-menu {
+                background-color: rgba(33, 37, 41, 0.95);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            }
+            
+            .dropdown-item {
+                color: rgba(255, 255, 255, 0.8);
+                padding: 10px 20px;
+                border-radius: 4px;
+                margin: 2px 0;
+                transition: all 0.3s ease;
+            }
+            
+            .dropdown-item:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+                color: white;
+            }
+            
+            .navbar-toggler {
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                padding: 6px 10px;
+            }
+            
+            .navbar-toggler:focus {
+                box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+            }
+        }
+        
+        /* Ensure proper spacing for main content */
+        main {
+            padding-top: 20px;
+        }
+        
+        /* Smooth transitions for navigation */
+        .navbar-nav .nav-link,
+        .dropdown-menu,
+        .dropdown-item {
+            transition: all 0.3s ease;
+        }
+    </style>
+    
+    <!-- Feature-specific CSS -->
+    {% if request.url.path == '/' %}
+        <link href="/static/css/chat.css" rel="stylesheet">
+    {% elif request.url.path == '/costs' %}
+        <link href="/static/css/cost.css" rel="stylesheet">
+    {% elif request.url.path.startswith('/visualizer') %}
+        <link href="/static/css/visualizer.css" rel="stylesheet">
+    {% endif %}
+    
+    <!-- Page-specific CSS -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-robot me-2"></i>
+                LegendaryCorp AI
+            </a>
+            
+            <!-- Hamburger button for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Navigation items -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.url.path == '/' %}active{% endif %}" href="/">
+                            <i class="fas fa-comments me-1"></i>Chat
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.url.path.startswith('/visualizer') %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-chart-pie me-1"></i>Visualizer
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/visualizer">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="/visualizer/documents">Documents</a></li>
+                            <li><a class="dropdown-item" href="/visualizer/search">Search</a></li>
+                            <li><a class="dropdown-item" href="/visualizer/explore">Explore</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.url.path == '/costs' %}active{% endif %}" href="/costs">
+                            <i class="fas fa-dollar-sign me-1"></i>Costs
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Common Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Feature-specific JavaScript -->
+    {% if request.url.path == '/' %}
+        <script src="/static/js/chat.js"></script>
+    {% elif request.url.path == '/costs' %}
+        <script src="/static/js/cost.js"></script>
+    {% elif request.url.path.startswith('/visualizer') %}
+        <script src="/static/js/visualizer.js"></script>
+    {% endif %}
+    
+    <!-- Page-specific scripts -->
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

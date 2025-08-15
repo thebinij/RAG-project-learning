@@ -17,6 +17,12 @@ instance/
 
 # Vector Database
 chroma_db/
+data/vector_db/
+data/costs/
+
+# Database files
+*.db
+*.sqlite3
 
 # Editor/OS specific
 .DS_Store
@@ -24,3 +30,4 @@ chroma_db/
 *.log
 
 .env
+cost_tracking.db

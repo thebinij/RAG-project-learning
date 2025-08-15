@@ -3,7 +3,7 @@ from chromadb.config import Settings
 
 print(" Initializing AI Brain...")
 client = chromadb.PersistentClient(
-    path="./chroma_db", settings=Settings(anonymized_telemetry=False)
+    path="./data/vector_db", settings=Settings(anonymized_telemetry=False)
 )
 
 collection = client.get_or_create_collection(

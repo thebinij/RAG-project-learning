@@ -51,10 +51,11 @@ class Settings(BaseSettings):
     request_timeout: int = Field(default=30, env="REQUEST_TIMEOUT")
 
     # Database
-    chroma_db_path: str = Field(default="./chroma_db", env="CHROMA_DB_PATH")
+    chroma_db_path: str = Field(default="./data/vector_db", env="CHROMA_DB_PATH")
     knowledge_docs_path: str = Field(
-        default="./knowledge-docs", env="KNOWLEDGE_DOCS_PATH"
+        default="./data/knowledge-docs", env="KNOWLEDGE_DOCS_PATH"
     )
+    cost_db_path: str = Field(default="./data/costs", env="COST_DB_PATH")
 
     @field_validator("cors_origins", mode="before")
     @classmethod

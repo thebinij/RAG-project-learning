@@ -13,7 +13,7 @@ from .document_parser import MultiFormatDocumentParser
 class DocumentProcessor:
     def __init__(self, vector_engine):
         self.vector_engine = vector_engine
-        self.docs_path = Path(__file__).parent.parent.parent.parent / "knowledge-docs"
+        self.docs_path = Path(__file__).parent.parent.parent.parent / "data" / "knowledge-docs"
         
         # Initialize multi-format document parser
         self.parser = MultiFormatDocumentParser()

@@ -69,7 +69,7 @@ async function sendMessageStream(message) {
     let sources = null;
     
     try {
-        const response = await fetch('/api/chat/stream', {
+        const response = await fetch('/api/v1/chat/stream', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ async function sendMessageNormal(message) {
     
     try {
         // Send to API
-        const response = await fetch('/api/chat', {
+        const response = await fetch('/api/v1/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

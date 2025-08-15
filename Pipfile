@@ -19,6 +19,7 @@ pydantic-settings = ">=2.0.0"
 unstructured = {extras = ["all-docs"], version = "*"}
 numpy = "*"
 scikit-learn = "*"
+tiktoken = "*"
 
 [dev-packages]
 pytest = "*"

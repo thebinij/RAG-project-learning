@@ -1,0 +1,51 @@
+
+{% extends "base.html" %}
+
+{% block title %}LegendaryCorp AI Assistant{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <h1>🚀 LegendaryCorp AI Assistant</h1>
+            <div class="status-bar">
+                <span class="status-indicator" id="status-dot"></span>
+                <span id="status-text">Ready</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Chat Container -->
+    <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+            <div class="message assistant">
+                <div class="message-content">
+                    <p>Hello! I'm your LegendaryCorp AI Assistant. I can help you with:</p>
+                    <ul>
+                        <li><strong>Company Info:</strong> Mission, values, history, structure</li>
+                        <li><strong>Employment:</strong> Handbook, benefits, policies</li>
+                        <li><strong>Products:</strong> LegendaryAI Core, Studio, SDK, CLI</li>
+                        <li><strong>Technical:</strong> Architecture, APIs, security</li>
+                        <li><strong>Work Policies:</strong> Remote work, office locations</li>
+                    </ul>
+                    <p>What would you like to know about LegendaryCorp?</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                id="chat-input" 
+                placeholder="Type your question here..."
+                autocomplete="off"
+            >
+            <button id="send-button" title="Send message">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

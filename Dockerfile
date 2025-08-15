@@ -54,7 +54,7 @@ WORKDIR /app
 COPY . .
 
 # Create necessary directories and set permissions
-RUN mkdir -p /app/chroma_db /app/logs && \
+RUN mkdir -p /app/data/vector_db /app/data/costs /app/data/knowledge-docs /app/logs && \
     chown -R appuser:appuser /app
 
 # Switch to non-root user

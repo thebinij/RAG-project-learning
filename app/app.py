@@ -18,7 +18,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.api import chat_router, visualizer_router
+from app.api import chat_router, visualizer_router, costs_router
 from app.core.config import settings
 from app.core.logging import console, logger
 
@@ -105,6 +105,8 @@ templates = Jinja2Templates(directory="templates")
 
 # Include API routers
 app.include_router(chat_router, prefix="/api/v1")
+app.include_router(costs_router, prefix="/api/v1")
+
 # Visualizer router is excluded from API documentation
 if settings.chroma_db_visualizer:
     # Mount visualizer router at /api/visualizer for API endpoints
@@ -145,7 +147,7 @@ def get_document_service():
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Render the chat interface"""
-    return templates.TemplateResponse("chat.html", {"request": request})
+    return templates.TemplateResponse("chat/index.html", {"request": request})
 
 
 @app.get("/chat")
@@ -160,6 +162,24 @@ async def help_page(request: Request):
     return templates.TemplateResponse("help.html", {"request": request})
 
 
+@app.get("/costs", response_class=HTMLResponse)
+async def cost_dashboard(request: Request):
+    """Cost analytics dashboard"""
+    return templates.TemplateResponse("cost/index.html", {"request": request})
+
+
+@app.post("/api/chat")
+async def legacy_chat_redirect():
+    """Redirect legacy /api/chat to /api/v1/chat for backward compatibility"""
+    return RedirectResponse(url="/api/v1/chat", status_code=307)
+
+
+@app.post("/api/chat/stream")
+async def legacy_chat_stream_redirect():
+    """Redirect legacy /api/chat/stream to /api/v1/chat/stream for backward compatibility"""
+    return RedirectResponse(url="/api/v1/chat/stream", status_code=307)
+
+
 # ===== VISUALIZER HTML ROUTES =====
 
 
@@ -170,31 +190,31 @@ async def visualizer_dashboard(request: Request):
         vector_service = get_vector_service()
         stats = vector_service.get_stats()
         return templates.TemplateResponse(
-            "dashboard.html", {"request": request, "stats": stats}
+            "visualizer/index.html", {"request": request, "stats": stats}
         )
     except Exception as e:
         logger.error(f"Visualizer dashboard error: {e}")
         return templates.TemplateResponse(
-            "dashboard.html", {"request": request, "stats": {"error": str(e)}}
+            "visualizer/index.html", {"request": request, "stats": {"error": str(e)}}
         )
 
 
 @app.get("/visualizer/documents", response_class=HTMLResponse, include_in_schema=False)
 async def visualizer_documents(request: Request):
     """Documents page for ChromaDB visualizer"""
-    return templates.TemplateResponse("documents.html", {"request": request})
+    return templates.TemplateResponse("visualizer/documents.html", {"request": request})
 
 
 @app.get("/visualizer/search", response_class=HTMLResponse, include_in_schema=False)
 async def visualizer_search(request: Request):
     """Search page for ChromaDB visualizer"""
-    return templates.TemplateResponse("search.html", {"request": request})
+    return templates.TemplateResponse("visualizer/search.html", {"request": request})
 
 
 @app.get("/visualizer/explore", response_class=HTMLResponse, include_in_schema=False)
 async def visualizer_explore(request: Request):
     """Explore page for ChromaDB visualizer"""
-    return templates.TemplateResponse("explore.html", {"request": request})
+    return templates.TemplateResponse("visualizer/explore.html", {"request": request})
 
 
 # ===== HEALTH CHECK =====

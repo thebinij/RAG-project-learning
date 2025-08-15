@@ -47,7 +47,10 @@ rag-project-learning/
 │   ├── css/
 │   └── js/
 ├── templates/                   # HTML templates
-├── knowledge-docs/              # Document storage
+├── data/                        # Data storage
+│   ├── knowledge-docs/         # Document storage
+│   ├── vector_db/              # Vector database
+│   └── costs/                  # Cost tracking database
 ├── chroma_db/                   # Vector database storage (auto-generated, gitignored)
 ├── main.py                      # Entry point (python main.py)
 ├── start_production.py          # Production entry point
@@ -236,7 +239,7 @@ docker run -d \
   -e CHROMA_DB_VISUALIZER=true \
   -e OPENAI_API_KEY=your_key \
   -v $(pwd)/chroma_db:/app/chroma_db \
-  -v $(pwd)/knowledge-docs:/app/knowledge-docs \
+  -v $(pwd)/data/knowledge-docs:/app/data/knowledge-docs \
   legendarycorp-ai-assistant:latest
 ```
 
@@ -301,12 +304,12 @@ pytest --cov=core --cov-report=html
 
 ```bash
 # Test chat endpoint
-curl -X POST "http://localhost:5252/api/chat" \
+curl -X POST "http://localhost:5252/api/v1/chat" \
   -H "Content-Type: application/json" \
   -d '{"message": "What is the company policy on remote work?"}'
 
 # Test streaming endpoint
-curl -X POST "http://localhost:5252/api/chat/stream" \
+curl -X POST "http://localhost:5252/api/v1/chat/stream" \
   -H "Content-Type: application/json" \
   -d '{"message": "Tell me about employee benefits"}'
 ```

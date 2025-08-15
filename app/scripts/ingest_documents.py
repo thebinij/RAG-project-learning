@@ -8,7 +8,7 @@ print("=" * 50)
 
 # Initialize systems
 print("Connecting to AI Brain (from Task 3)...")
-client = chromadb.PersistentClient(path="./chroma_db")
+client = chromadb.PersistentClient(path="./data/vector_db")
 collection = client.get_collection("LegendaryCorp_docs")
 
 print("Loading Semantic Processor (from Task 5)...")
@@ -20,7 +20,7 @@ print("Beginning knowledge transfer...")
 doc_count = 0
 total_chunks = 0
 
-for category in Path("./knowledge-docs").iterdir():
+for category in Path("./data/knowledge-docs").iterdir():
     if category.is_dir():
         print(f"\nProcessing {category.name}:")
 
