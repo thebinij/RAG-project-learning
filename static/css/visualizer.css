@@ -53,6 +53,16 @@
     transition: all 0.3s ease;
 }
 
+.document-card .card-body {
+    padding: 1.25rem;
+}
+
+.document-card .card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 0.75rem 1.25rem;
+}
+
 .document-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
@@ -176,12 +186,83 @@
 /* Metadata badges */
 .metadata-badge {
     display: inline-block;
-    background: #f1f5f9;
-    color: #64748b;
-    padding: 4px 12px;
+    padding: 6px 12px;
     margin: 2px;
     border-radius: 12px;
     font-size: 0.8rem;
+    max-width: fit-content;
+    font-weight: 500;
+    border: none;
+}
+
+/* Override Bootstrap badge colors for better visibility using proper specificity */
+.badge.bg-secondary.metadata-badge {
+    background-color: #6c757d;
+    color: white;
+}
+
+.badge.bg-info.metadata-badge {
+    background-color: #0dcaf0;
+    color: #000;
+}
+
+.badge.bg-warning.metadata-badge {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge.bg-primary.metadata-badge {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.badge.bg-success.metadata-badge {
+    background-color: #198754;
+    color: white;
+}
+
+.badge.bg-danger.metadata-badge {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Badge container styling */
+.badge-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+/* Ensure badges don't overflow */
+.metadata-badge {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Special handling for file name badges */
+.metadata-badge.file-badge {
+    max-width: 200px;
+    font-size: 0.75rem;
+}
+
+/* Long filename handling */
+.metadata-badge.file-badge .filename-text {
+    max-width: 120px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+/* Hover effects for badges */
+.metadata-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
 }
 
 /* Content preview */
@@ -236,5 +317,24 @@
     
     .search-container {
         padding: 20px;
+    }
+    
+    .badge-container {
+        gap: 3px;
+        margin-bottom: 10px;
+    }
+    
+    .metadata-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        max-width: 280px;
+    }
+    
+    .metadata-badge.file-badge {
+        max-width: 120px;
+    }
+    
+    .metadata-badge.file-badge .filename-text {
+        max-width: 80px;
     }
 }

@@ -13,6 +13,20 @@ Your RAG system now includes comprehensive cost tracking that shows:
 - **Efficiency metrics** and optimization suggestions
 - **Export capabilities** (JSON/CSV) for external analysis
 
+## 💰 Cost Flow in Your RAG System
+
+```
+📚 Document Ingestion (FREE)
+    ↓
+🔍 Vector Database (FREE)
+    ↓
+💬 Chat Queries (PAID - Cost Tracked)
+    ↓
+📊 Cost Dashboard (FREE)
+```
+
+**Key Insight**: You only pay when you **use** the knowledge, not when you **store** it!
+
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
@@ -116,6 +130,12 @@ Cost efficiency analysis and optimization suggestions.
 - No changes needed to your current RAG pipeline
 - Automatic cost tracking on every request
 
+### 5. **Document Ingestion Costs**
+- **Local Processing**: Document ingestion (`ingest_docs.py`) processes local files without LLM API calls
+- **No API Costs**: Ingestion itself doesn't incur LLM costs - only when you query the ingested documents
+- **Embedding Generation**: If you use external embedding APIs (e.g., OpenAI embeddings), those costs would be tracked
+- **Future Enhancement**: Could add cost tracking for external embedding services if needed
+
 ## 🔧 Configuration
 
 ### Model Pricing
@@ -137,6 +157,29 @@ PRICING = {
 Configure in the API calls or modify the default values.
 
 ## 📈 Usage Examples
+
+### Document Ingestion vs. Query Costs
+
+#### **Document Ingestion (`ingest_docs.py`)**
+```bash
+# This process is FREE - no LLM API costs
+python ingest_docs.py --category research
+```
+- ✅ **No API Costs**: Processes local PDFs, markdown files locally
+- ✅ **No Token Usage**: No LLM calls during ingestion
+- ✅ **Local Embeddings**: Uses local SentenceTransformers model
+- ✅ **One-time Processing**: Documents processed once, stored in vector database
+
+#### **Query Costs (When Using Chat)**
+```python
+# This WILL incur costs - LLM API calls
+query = "What is chain-of-thought prompting?"
+response = chat_engine.chat(query)  # Costs tracked automatically
+```
+- 💰 **API Costs**: Each chat query uses LLM APIs
+- 📊 **Cost Tracking**: Automatically tracked and logged
+- 🔍 **Token Counting**: Input/output tokens counted accurately
+- 📈 **Analytics**: Visible in cost dashboard
 
 ### Track a Single Request
 ```python
@@ -197,12 +240,38 @@ This will test:
 - Cost tracker
 - Chat engine integration
 
+## 📋 Cost Tracking Summary by Operation
+
+| Operation | Command | Cost | Tracking |
+|-----------|---------|------|----------|
+| **Database Setup** | `python init_db.py` | 🆓 FREE | ❌ None |
+| **Document Ingestion** | `python ingest_docs.py` | 🆓 FREE | ❌ None |
+| **Chat Queries** | `chat_engine.chat()` | 💰 PAID | ✅ Full |
+| **Cost Dashboard** | Visit `/costs` | 🆓 FREE | ❌ None |
+| **API Endpoints** | `/api/v1/costs/*` | 🆓 FREE | ❌ None |
+
+**💡 Remember**: Cost tracking only applies to LLM API calls, not to local document processing!
+
 ## 🔍 Monitoring & Alerts
 
+### Cost Tracking by Operation
+
+#### **🆓 FREE Operations (No Cost Tracking)**
+- **Document Ingestion**: `python ingest_docs.py` - processes local files
+- **Database Initialization**: `python init_db.py` - sets up ChromaDB
+- **Local Embeddings**: SentenceTransformers model runs locally
+- **File Parsing**: PDF, markdown, Word document processing
+
+#### **💰 PAID Operations (Cost Tracked)**
+- **Chat Queries**: Every `chat_engine.chat()` call
+- **LLM API Calls**: OpenAI, Claude, DeepSeek API usage
+- **External Embeddings**: If using OpenAI embeddings API
+- **Streaming Responses**: Real-time chat responses
+
 ### Automatic Monitoring
-- Every request is automatically tracked
-- Real-time cost updates
-- Automatic alert generation
+- Every **paid** request is automatically tracked
+- Real-time cost updates for LLM API calls
+- Automatic alert generation for high spending
 
 ### Manual Monitoring
 - Check dashboard at `/costs`

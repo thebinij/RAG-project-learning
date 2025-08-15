@@ -122,11 +122,28 @@ async function sendMessageStream(message) {
                                 }
                                 
                                 uniqueSources.forEach(source => {
-                                    const sourceSpan = document.createElement('span');
-                                    sourceSpan.className = 'source-item';
-                                    sourceSpan.textContent = source.metadata?.title || 'Document';
-                                    sourceSpan.title = `Score: ${(source.score * 100).toFixed(1)}%`;
-                                    sourcesDiv.appendChild(sourceSpan);
+                                    const sourceCard = document.createElement('div');
+                                    sourceCard.className = 'source-item';
+                                    
+                                    // Create source card content
+                                    const sourceTitle = document.createElement('div');
+                                    sourceTitle.className = 'source-title';
+                                    sourceTitle.textContent = source.metadata?.title || 'Document';
+                                    
+                                    const sourceMeta = document.createElement('div');
+                                    sourceMeta.className = 'source-meta';
+                                    sourceMeta.innerHTML = `
+                                        <span class="source-category">${source.metadata?.category || 'Unknown'}</span>
+                                        <span class="source-score">${(source.score * 100).toFixed(1)}% match</span>
+                                    `;
+                                    
+                                    sourceCard.appendChild(sourceTitle);
+                                    sourceCard.appendChild(sourceMeta);
+                                    
+                                    // Add tooltip with more info
+                                    sourceCard.title = `File: ${source.metadata?.file || 'Unknown'}\nCategory: ${source.metadata?.category || 'Unknown'}\nRelevance: ${(source.score * 100).toFixed(1)}%`;
+                                    
+                                    sourcesDiv.appendChild(sourceCard);
                                 });
                                 
                                 contentDiv.appendChild(sourcesDiv);
@@ -195,7 +212,7 @@ function addMessage(type, content, sources = null) {
     if (sources && sources.length > 0) {
         const sourcesDiv = document.createElement('div');
         sourcesDiv.className = 'sources';
-        sourcesDiv.innerHTML = '<small>Sources: </small>';
+        sourcesDiv.innerHTML = '<small>Sources:</small>';
         
         // Deduplicate sources by title
         const uniqueSources = [];
@@ -210,11 +227,28 @@ function addMessage(type, content, sources = null) {
         }
         
         uniqueSources.forEach(source => {
-            const sourceSpan = document.createElement('span');
-            sourceSpan.className = 'source-item';
-            sourceSpan.textContent = source.metadata?.title || 'Document';
-            sourceSpan.title = `Score: ${(source.score * 100).toFixed(1)}%`;
-            sourcesDiv.appendChild(sourceSpan);
+            const sourceCard = document.createElement('div');
+            sourceCard.className = 'source-item';
+            
+            // Create source card content
+            const sourceTitle = document.createElement('div');
+            sourceTitle.className = 'source-title';
+            sourceTitle.textContent = source.metadata?.title || 'Document';
+            
+            const sourceMeta = document.createElement('div');
+            sourceMeta.className = 'source-meta';
+            sourceMeta.innerHTML = `
+                <span class="source-category">${source.metadata?.category || 'Unknown'}</span>
+                <span class="source-score">${(source.score * 100).toFixed(1)}% match</span>
+            `;
+            
+            sourceCard.appendChild(sourceTitle);
+            sourceCard.appendChild(sourceMeta);
+            
+            // Add tooltip with more info
+            sourceCard.title = `File: ${source.metadata?.file || 'Unknown'}\nCategory: ${source.metadata?.category || 'Unknown'}\nRelevance: ${(source.score * 100).toFixed(1)}%`;
+            
+            sourcesDiv.appendChild(sourceCard);
         });
         
         contentDiv.appendChild(sourcesDiv);
@@ -227,26 +261,38 @@ function addMessage(type, content, sources = null) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Format message content
+// Format message content using a simple but effective markdown parser
 function formatMessage(content) {
-    // Convert markdown-like formatting to HTML
+    // Simple markdown to HTML conversion
     let formatted = content
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g, '<br>')
+        // Headers
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        // Bold and italic
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^- (.*?)$/gm, '<li>$1</li>')
-        .replace(/^(\d+)\. (.*?)$/gm, '<li>$2</li>');
+        // Code blocks (indented lines)
+        .replace(/^(\s+)(.*$)/gim, function(match, spaces, content) {
+            if (spaces.length >= 2) {
+                return `<pre><code>${match}</code></pre>`;
+            }
+            return match;
+        })
+        // Lists
+        .replace(/^- (.*$)/gim, '<li>$1</li>')
+        .replace(/^(\d+)\. (.*$)/gim, '<li>$2</li>')
+        // Wrap consecutive li tags in ul
+        .replace(/(<li>.*?<\/li>\s*)+/g, function(match) {
+            return `<ul>${match}</ul>`;
+        })
+        // Paragraphs
+        .replace(/\n\n/g, '</p><p>');
     
-    // Wrap in paragraph if not already
+    // Wrap in paragraph if not already wrapped
     if (!formatted.startsWith('<')) {
         formatted = `<p>${formatted}</p>`;
     }
-    
-    // Convert consecutive li tags to ul
-    formatted = formatted.replace(/(<li>.*?<\/li>\s*)+/g, (match) => {
-        return `<ul>${match}</ul>`;
-    });
     
     return formatted;
 }

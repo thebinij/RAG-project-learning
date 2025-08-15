@@ -248,3 +248,41 @@ async def api_visualizer_documents(
         documents = viewer.get_all_documents(limit, offset)
 
     return documents
+
+
+@visualizer_router.get("/metadata")
+async def api_visualizer_metadata(
+    vector_service: VectorService = Depends(get_vector_service),
+):
+    """API endpoint for getting document metadata from ChromaDB"""
+    viewer = ChromaDBWebViewer(vector_service)
+    
+    try:
+        if not viewer.collection:
+            return {"error": "ChromaDB not available"}
+        
+        # Get all documents with metadata
+        all_docs = viewer.collection.get(include=["metadatas"])
+        
+        if not all_docs["metadatas"]:
+            return {"metadata": []}
+        
+        # Extract and organize metadata
+        metadata_list = []
+        for meta in all_docs["metadatas"]:
+            metadata_list.append({
+                "title": meta.get("title", "Untitled"),
+                "category": meta.get("category", "Unknown"),
+                "filename": meta.get("file") or meta.get("filename", "Unknown"),
+                "file_type": meta.get("file_type", "Unknown"),
+                "chunk_index": meta.get("chunk_index", 0),
+                "total_chunks": meta.get("total_chunks", 1),
+                "conversion_quality": meta.get("conversion_quality", "Unknown"),
+                "chunk_size": meta.get("chunk_size", 0)
+            })
+        
+        return {"metadata": metadata_list}
+        
+    except Exception as e:
+        logger.error(f"Error fetching metadata: {e}")
+        return {"error": str(e)}

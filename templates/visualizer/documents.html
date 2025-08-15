@@ -203,20 +203,31 @@
             currentFile = document.getElementById('fileFilter').value;
             currentLimit = parseInt(document.getElementById('limitSelect').value);
             
+            console.log('Applying filters:', { currentCategory, currentFile, currentLimit });
+            
             filteredDocuments = allDocuments.filter(doc => {
                 if (currentCategory && doc.metadata.category !== currentCategory) return false;
                 if (currentFile && doc.metadata.file !== currentFile) return false;
                 return true;
             });
             
+            console.log('Filtered documents:', filteredDocuments.length, 'of', allDocuments.length);
+            
+            // Reset to first page when filters change
+            currentPage = 1;
+            
             updateDisplay();
         }
 
         // Update display
         function updateDisplay() {
+            console.log('updateDisplay called:', { currentPage, currentLimit, filteredDocuments: filteredDocuments.length });
+            
             const startIndex = (currentPage - 1) * currentLimit;
             const endIndex = startIndex + currentLimit;
             const pageDocuments = filteredDocuments.slice(startIndex, endIndex);
+            
+            console.log('Pagination calculation:', { startIndex, endIndex, pageDocuments: pageDocuments.length });
             
             // Update statistics
             document.getElementById('showingCount').textContent = pageDocuments.length;
@@ -253,20 +264,26 @@
             }
             
             documents.forEach(doc => {
+                // Create content preview from text or metadata
+                const contentPreview = doc.text ? 
+                    (doc.text.length > 150 ? doc.text.substring(0, 150) + '...' : doc.text) :
+                    (doc.metadata.description || 'No content preview available');
+                
                 const card = document.createElement('div');
                 card.className = 'col-md-6 col-lg-4 mb-3';
                 card.innerHTML = `
-                    <div class="card document-card h-100" onclick="showDocumentDetail(${doc.id})">
+                    <div class="card document-card h-100" onclick="showDocumentDetail('${doc.id}')">
                         <div class="card-body">
                             <h6 class="card-title text-primary mb-2">
                                 ${doc.metadata.title || 'No Title'}
                             </h6>
-                            <div class="mb-2">
+                            <div class="badge-container">
                                 <span class="badge bg-secondary metadata-badge">
                                     <i class="fas fa-folder me-1"></i>${doc.metadata.category}
                                 </span>
-                                <span class="badge bg-info metadata-badge">
-                                    <i class="fas fa-file me-1"></i>${doc.metadata.file}
+                                <span class="badge bg-info metadata-badge file-badge" title="${doc.metadata.file}">
+                                    <i class="fas fa-file me-1"></i>
+                                    <span class="filename-text">${doc.metadata.file}</span>
                                 </span>
                                 ${doc.metadata.chunk_index !== undefined ? 
                                     `<span class="badge bg-warning metadata-badge">
@@ -275,7 +292,7 @@
                                 }
                             </div>
                             <div class="content-preview">
-                                <p class="card-text small">${doc.content_preview}</p>
+                                <p class="card-text small">${contentPreview}</p>
                             </div>
                         </div>
                         <div class="card-footer text-muted small">
@@ -293,13 +310,18 @@
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = '';
             
-            if (totalPages <= 1) return;
+            console.log('Updating pagination:', { totalPages, filteredDocuments: filteredDocuments.length, currentLimit, currentPage });
+            
+            if (totalPages <= 1) {
+                console.log('Only one page, hiding pagination');
+                return;
+            }
             
             // Previous button
             const prevLi = document.createElement('li');
             prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
             prevLi.innerHTML = `
-                <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
+                <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">
                     <i class="fas fa-chevron-left"></i>
                 </a>
             `;
@@ -310,7 +332,7 @@
                 if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
                     const li = document.createElement('li');
                     li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                    li.innerHTML = `<a class="page-link" href="#" onclick="changePage(${i})">${i}</a>`;
+                    li.innerHTML = `<a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>`;
                     pagination.appendChild(li);
                 } else if (i === currentPage - 3 || i === currentPage + 3) {
                     const li = document.createElement('li');
@@ -324,17 +346,24 @@
             const nextLi = document.createElement('li');
             nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
             nextLi.innerHTML = `
-                <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
+                <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">
                     <i class="fas fa-chevron-right"></i>
                 </a>
             `;
             pagination.appendChild(nextLi);
+            
+            console.log('Pagination updated with', pagination.children.length, 'elements');
         }
 
         // Change page
         function changePage(page) {
-            if (page < 1) return;
+            console.log('changePage called with:', page);
+            if (page < 1) {
+                console.log('Invalid page number:', page);
+                return;
+            }
             currentPage = page;
+            console.log('Current page set to:', currentPage);
             updateDisplay();
         }
 
@@ -343,20 +372,24 @@
             const doc = allDocuments.find(d => d.id === docId);
             if (!doc) return;
             
+            // Get content from text or metadata
+            const content = doc.text || doc.metadata.description || 'No content available';
+            
             const container = document.getElementById('documentDetail');
             container.innerHTML = `
                 <div class="row">
                     <div class="col-md-8">
                         <h5 class="text-primary mb-3">${doc.metadata.title || 'No Title'}</h5>
-                        <div class="mb-3">
-                            <span class="badge bg-secondary me-2">
+                        <div class="badge-container">
+                            <span class="badge bg-secondary metadata-badge me-2">
                                 <i class="fas fa-folder me-1"></i>${doc.metadata.category}
                             </span>
-                            <span class="badge bg-info me-2">
-                                <i class="fas fa-file me-1"></i>${doc.metadata.file}
+                            <span class="badge bg-info metadata-badge file-badge me-2" title="${doc.metadata.file}">
+                                <i class="fas fa-file me-1"></i>
+                                <span class="filename-text">${doc.metadata.file}</span>
                             </span>
                             ${doc.metadata.chunk_index !== undefined ? 
-                                `<span class="badge bg-warning me-2">
+                                `<span class="badge bg-warning metadata-badge me-2">
                                     <i class="fas fa-layer-group me-1"></i>Chunk ${doc.metadata.chunk_index + 1} of ${doc.metadata.total_chunks}
                                 </span>` : ''
                             }
@@ -366,7 +399,7 @@
                                 <h6 class="mb-0">Content</h6>
                             </div>
                             <div class="card-body">
-                                <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">${doc.content}</pre>
+                                <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">${content}</pre>
                             </div>
                         </div>
                     </div>
