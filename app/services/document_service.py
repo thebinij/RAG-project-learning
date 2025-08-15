@@ -5,7 +5,7 @@ Document service for document processing operations
 from typing import Any, Dict
 
 from app.core.config import settings
-from app.core.engines.document_processor import DocumentProcessor
+from app.utils.document_processor import DocumentProcessor
 from app.core.logging import logger
 
 
