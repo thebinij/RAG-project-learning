@@ -6,7 +6,7 @@ print("=" * 50)
 
 # Initialize all systems
 print(" Initializing RAG Components...")
-client = chromadb.PersistentClient(path="./chroma_db")
+client = chromadb.PersistentClient(path="./data/vector_db")
 collection = client.get_collection("LegendaryCorp_docs")
 model = SentenceTransformer("all-MiniLM-L6-v2")
 print(" All systems operational!\n")

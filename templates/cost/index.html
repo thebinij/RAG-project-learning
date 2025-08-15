@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Cost Analytics Dashboard - LegendaryCorp RAG{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css" rel="stylesheet">
+<style>
+    .refresh-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .refresh-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .export-btn {
+        background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: 500;
+        box-shadow: 0 4px 15px rgba(38, 222, 129, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .export-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(38, 222, 129, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h2 mb-2">💰 Cost Analytics Dashboard</h1>
+                    <p class="text-muted mb-0">Track and analyze your RAG system's LLM API costs in real-time</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button class="btn refresh-btn me-2" onclick="refreshData()">
+                        🔄 Refresh
+                    </button>
+                    <button class="btn export-btn" onclick="exportData()">
+                        📊 Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Metrics -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="cost-card card-hover">
+                    <h5 class="metric-label">Today's Cost</h5>
+                    <div class="metric-value" id="todayCost">$0.00</div>
+                    <small class="metric-label">Last 24 hours</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card card-hover">
+                    <h5 class="metric-label">Total Requests</h5>
+                    <div class="metric-value" id="totalRequests">0</div>
+                    <small class="metric-label">Today</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card card-hover">
+                    <h5 class="metric-label">Total Tokens</h5>
+                    <div class="metric-value" id="totalTokens">0</div>
+                    <small class="metric-label">Today</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card card-hover">
+                    <h5 class="metric-label">Cost/Request</h5>
+                    <div class="metric-value" id="costPerRequest">$0.00</div>
+                    <small class="metric-label">Average</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="metric-card">
+                    <h5>Daily Cost Trend</h5>
+                    <div class="chart-container">
+                        <canvas id="dailyCostChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="metric-card">
+                    <h5>Model Cost Breakdown</h5>
+                    <div class="chart-container">
+                        <canvas id="modelCostChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Alerts -->
+        <div class="row">
+            <div class="col-12">
+                <div class="metric-card">
+                    <h5>🚨 Cost Alerts</h5>
+                    <div id="costAlerts">
+                        <p class="text-muted">No alerts at this time</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Efficiency Metrics -->
+        <div class="row">
+            <div class="col-12">
+                <div class="metric-card">
+                    <h5>📈 Efficiency Metrics</h5>
+                    <div id="efficiencyMetrics">
+                        <p class="text-muted">Loading efficiency data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Breakdown -->
+        <div class="row">
+            <div class="col-12">
+                <div class="metric-card">
+                    <h5>📊 Detailed Cost Breakdown</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="costBreakdownTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Requests</th>
+                                    <th>Tokens</th>
+                                    <th>Cost</th>
+                                    <th>Avg Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+        let dailyCostChart, modelCostChart;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshData();
+            // Refresh every 5 minutes
+            setInterval(refreshData, 300000);
+        });
+
+        async function refreshData() {
+            try {
+                await Promise.all([
+                    loadRealtimeMetrics(),
+                    loadCostSummary(),
+                    loadModelBreakdown(),
+                    loadCostAlerts(),
+                    loadEfficiencyMetrics()
+                ]);
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+            }
+        }
+
+        async function loadRealtimeMetrics() {
+            const response = await fetch('/api/v1/costs/realtime');
+            const data = await response.json();
+            
+            document.getElementById('todayCost').textContent = `$${data.today_total_cost.toFixed(6)}`;
+            document.getElementById('totalRequests').textContent = data.today_total_requests;
+            document.getElementById('totalTokens').textContent = data.today_total_tokens.toLocaleString();
+            document.getElementById('costPerRequest').textContent = `$${data.cost_per_request.toFixed(6)}`;
+        }
+
+        async function loadCostSummary() {
+            const response = await fetch('/api/v1/costs/summary?days=30');
+            const data = await response.json();
+            
+            updateDailyCostChart(data.daily_breakdown);
+            updateCostBreakdownTable(data.daily_breakdown);
+        }
+
+        async function loadModelBreakdown() {
+            const response = await fetch('/api/v1/costs/breakdown?days=30');
+            const data = await response.json();
+            
+            updateModelCostChart(data.models);
+        }
+
+        async function loadCostAlerts() {
+            const response = await fetch('/api/v1/costs/alerts?threshold=5.0');
+            const data = await response.json();
+            
+            const alertsContainer = document.getElementById('costAlerts');
+            if (data.alerts && data.alerts.length > 0) {
+                alertsContainer.innerHTML = data.alerts.map(alert => `
+                    <div class="alert-card">
+                        <strong>High Cost Alert:</strong> $${alert.daily_cost.toFixed(2)} on ${alert.date} 
+                        (${alert.requests} requests)
+                    </div>
+                `).join('');
+            } else {
+                alertsContainer.innerHTML = '<p class="text-success">✅ No cost alerts - spending is within normal range</p>';
+            }
+        }
+
+        async function loadEfficiencyMetrics() {
+            const response = await fetch('/api/v1/costs/efficiency?days=30');
+            const data = await response.json();
+            
+            const container = document.getElementById('efficiencyMetrics');
+            container.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="efficiency-card">
+                            <h6>Cost per Request</h6>
+                            <h4>$${data.cost_efficiency.cost_per_request.toFixed(6)}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="efficiency-card">
+                            <h6>Cost per Token</h6>
+                            <h4>$${data.cost_efficiency.cost_per_token.toFixed(8)}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="efficiency-card">
+                            <h6>Tokens per Request</h6>
+                            <h4>${data.cost_efficiency.tokens_per_request.toFixed(0)}</h4>
+                        </div>
+                    </div>
+                </div>
+                ${data.optimization_suggestions.length > 0 ? `
+                    <div class="mt-3">
+                        <h6>💡 Optimization Suggestions:</h6>
+                        <ul>
+                            ${data.optimization_suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function updateDailyCostChart(dailyData) {
+            const ctx = document.getElementById('dailyCostChart').getContext('2d');
+            
+            if (dailyCostChart) {
+                dailyCostChart.destroy();
+            }
+            
+            dailyCostChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dailyData.map(d => d.date),
+                    datasets: [{
+                        label: 'Daily Cost ($)',
+                        data: dailyData.map(d => d.cost),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(6);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateModelCostChart(models) {
+            const ctx = document.getElementById('modelCostChart').getContext('2d');
+            
+            if (modelCostChart) {
+                modelCostChart.destroy();
+            }
+            
+            modelCostChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: models.map(m => m.model),
+                    datasets: [{
+                        data: models.map(m => m.cost),
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#f5576c',
+                            '#4facfe'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCostBreakdownTable(dailyData) {
+            const tbody = document.querySelector('#costBreakdownTable tbody');
+            tbody.innerHTML = dailyData.map(day => `
+                <tr>
+                    <td>${day.date}</td>
+                    <td>${day.requests}</td>
+                    <td>${day.tokens.toLocaleString()}</td>
+                    <td>$${day.cost.toFixed(6)}</td>
+                    <td>${day.avg_time ? day.avg_time.toFixed(2) + 's' : 'N/A'}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function exportData() {
+            try {
+                const response = await fetch('/api/v1/costs/export?format=csv&days=30');
+                const csvData = await response.text();
+                
+                // Use cost utility for file download
+                CostUtils.downloadFile(csvData, `cost_analytics_${new Date().toISOString().split('T')[0]}.csv`, 'text/csv');
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                CostUtils.showAlert('Error exporting data. Please try again.', 'danger');
+            }
+        }
+    </script>
+{% endblock %}

@@ -20,7 +20,7 @@ class VectorEngine:
 
         # Initialize ChromaDB client with persistent storage
         self.client = chromadb.PersistentClient(
-            path="./chroma_db", settings=Settings(anonymized_telemetry=False)
+            path="./data/vector_db", settings=Settings(anonymized_telemetry=False)
         )
 
         # Initialize embedding model

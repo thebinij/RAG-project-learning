@@ -8,11 +8,13 @@ services:
       - LOG_LEVEL=WARN
       - CHROMA_DB_VISUALIZER=false
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - KNOWLEDGE_DOCS_PATH=/app/knowledge-docs
-      - CHROMA_DB_PATH=/app/chroma_db
+      - KNOWLEDGE_DOCS_PATH=/app/data/knowledge-docs
+      - CHROMA_DB_PATH=/app/data/vector_db
+      - COST_DB_PATH=/app/data/costs
     volumes:
-      - ./chroma_db:/app/chroma_db
-      - ./knowledge-docs:/app/knowledge-docs
+      - ./data/vector_db:/app/data/vector_db
+      - ./data/knowledge-docs:/app/data/knowledge-docs
+      - ./data/costs:/app/data/costs
       - ./logs:/app/logs
     restart: unless-stopped
     healthcheck:

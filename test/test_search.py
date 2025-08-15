@@ -6,7 +6,7 @@ print("=" * 50)
 
 # Initialize
 print(" Connecting to Knowledge Base...")
-client = chromadb.PersistentClient(path="./chroma_db")
+client = chromadb.PersistentClient(path="./data/vector_db")
 collection = client.get_collection("LegendaryCorp_docs")
 
 print(" Loading AI Understanding...")
