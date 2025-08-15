@@ -88,6 +88,32 @@
     .history-item:hover {
         background-color: #f8f9fa;
     }
+    
+    /* View Full Content button styling */
+    .btn-view-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-view-content:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    /* Search results card improvements */
+    .result-card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .result-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
 </style>
 {% endblock %}
 
@@ -277,6 +303,9 @@
             }
         }
 
+        // Global variable to store search results
+        let lastSearchResults = [];
+
         // Perform search
         async function performSearch() {
             const query = document.getElementById('searchInput').value.trim();
@@ -293,6 +322,9 @@
                 const limit = parseInt(document.getElementById('resultLimit').value);
                 const response = await fetch(`/api/visualizer/search?q=${encodeURIComponent(query)}&limit=${limit}`);
                 const results = await response.json();
+                
+                // Store results globally
+                lastSearchResults = results;
                 
                 showLoading(false);
                 displayResults(query, results);
@@ -379,9 +411,15 @@
                         
                         <p class="card-text">${result.content_preview}</p>
                         
-                        <button class="btn btn-outline-primary btn-sm" onclick="showFullContent('${result.id}')">
-                            <i class="fas fa-expand me-1"></i>View Full Content
-                        </button>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Content length: ${(result.content || result.content_preview || '').length} characters
+                            </small>
+                            <button class="btn btn-view-content btn-sm" onclick="showFullContent(${result.id})">
+                                <i class="fas fa-expand me-1"></i>View Full Content
+                            </button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(card);
@@ -393,8 +431,11 @@
         // Show full content
         function showFullContent(docId) {
             // Find the document in the results
-            const doc = window.lastSearchResults?.find(r => r.id == docId);
-            if (!doc) return;
+            const doc = lastSearchResults.find(r => r.id == docId);
+            if (!doc) {
+                console.error('Document not found for ID:', docId);
+                return;
+            }
 
             // Create modal content
             const modalContent = `
@@ -420,7 +461,7 @@
                             <h6 class="mb-0">Content</h6>
                         </div>
                         <div class="card-body">
-                            <pre style="white-space: pre-wrap; font-family: inherit; max-height: 400px; overflow-y: auto;">${doc.content}</pre>
+                            <pre style="white-space: pre-wrap; font-family: inherit; max-height: 400px; overflow-y: auto;">${doc.content || doc.content_preview}</pre>
                         </div>
                     </div>
                     
@@ -430,9 +471,9 @@
                         </div>
                         <div class="card-body">
                             <dl class="row mb-0">
-                                ${Object.entries(doc.metadata).map(([key, value]) => `
-                                    <dt class="col-sm-3">${key}:</dt>
-                                    <dd class="col-sm-9">${value}</dd>
+                                ${Object.entries(doc.metadata).filter(([key, _]) => key !== 'content').map(([key, value]) => `
+                                    <dt class="col-sm-4 text-break">${key}:</dt>
+                                    <dd class="col-sm-8 text-break">${value}</dd>
                                 `).join('')}
                             </dl>
                         </div>

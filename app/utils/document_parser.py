@@ -1,14 +1,11 @@
 """
-Document Parser Utilities - Converts various file types to Markdown for RAG processing
-
-This module provides utilities for parsing different document formats and converting
-them to Markdown for consistent processing in the RAG system using the unstructured library.
+Document Parser - Converts various file types to text for RAG processing
 """
 
 import re
-from pathlib import Path
-from typing import Dict, List, Any
 import logging
+from pathlib import Path
+from typing import Dict, List, Any, Optional
 
 from unstructured.partition.auto import partition
 from unstructured.documents.elements import Text, Title, NarrativeText, ListItem, Table
@@ -17,11 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 class MultiFormatDocumentParser:
-    """Parser that converts various file types to Markdown using unstructured library"""
+    """
+    Parser that converts various file types to text using unstructured library
+    Optimized for RAG systems with robust error handling
+    """
     
     def __init__(self):
-        
-        # Supported extensions that unstructured can handle
+        # Supported file extensions
         self.supported_extensions = {
             # Document formats
             '.pdf', '.docx', '.doc', '.rtf', '.odt', '.pages',
@@ -60,8 +59,11 @@ class MultiFormatDocumentParser:
         """
         Parse any supported document type using unstructured library
         
+        Args:
+            file_path: Path to the document to parse
+            
         Returns:
-            Dict with keys: content, file_type, original_path, conversion_quality
+            Dict with keys: content, file_type, original_path, conversion_quality, success
         """
         if not file_path.exists():
             raise FileNotFoundError(f"File not found: {file_path}")
@@ -72,13 +74,13 @@ class MultiFormatDocumentParser:
             raise ValueError(f"Unsupported file type: {file_extension}")
         
         try:
-            # Use unstructured library to parse the document
-            elements = partition(str(file_path))
+            # Parse document using unstructured library
+            elements = self._parse_with_unstructured(file_path)
             
-            # Convert elements to markdown
-            content = self._elements_to_markdown(elements)
+            # Convert elements to text
+            content = self._elements_to_text(elements)
             
-            # Determine conversion quality
+            # Assess conversion quality
             quality = self._assess_conversion_quality(content, file_extension, elements)
             
             return {
@@ -101,68 +103,104 @@ class MultiFormatDocumentParser:
                 "error": str(e)
             }
     
-    def _elements_to_markdown(self, elements) -> str:
-        """Convert unstructured elements to markdown format"""
-        markdown_lines = []
+    def _parse_with_unstructured(self, file_path: Path) -> List:
+        """Parse document using unstructured library with fallback strategies"""
+        try:
+            # Primary parsing attempt
+            elements = partition(str(file_path))
+            return elements
+            
+        except Exception as primary_error:
+            logger.warning(f"Primary parsing failed for {file_path.name}: {primary_error}")
+            
+            try:
+                # Fallback: try with fast strategy
+                elements = partition(str(file_path), strategy="fast")
+                return elements
+                
+            except Exception as fallback_error:
+                logger.warning(f"Fast parsing also failed for {file_path.name}: {fallback_error}")
+                
+                # Final fallback: basic text extraction
+                return self._basic_text_extraction(file_path)
+    
+    def _basic_text_extraction(self, file_path: Path) -> List:
+        """Basic text extraction when unstructured parsing fails"""
+        try:
+            # Try to read as text file
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+                return [Text(content)]
+        except Exception:
+            # Return error message element
+            return [Text(f"# Parsing Error\n\nCould not parse {file_path.name}")]
+    
+    def _elements_to_text(self, elements: List) -> str:
+        """Convert unstructured elements to clean text"""
+        if not elements:
+            return ""
+        
+        text_lines = []
         
         for element in elements:
+            if not hasattr(element, 'text') or not element.text:
+                continue
+                
+            text = element.text.strip()
+            if not text:
+                continue
+            
+            # Handle different element types
             if isinstance(element, Title):
-                # Handle titles
-                text = element.text.strip()
-                if text:
-                    markdown_lines.append(f"# {text}")
+                # Add title with markdown formatting
+                text_lines.append(f"# {text}")
             elif isinstance(element, NarrativeText):
-                # Handle narrative text (paragraphs)
-                text = element.text.strip()
-                if text:
-                    markdown_lines.append(text)
-                    markdown_lines.append("")  # Add spacing
+                # Add narrative text
+                text_lines.append(text)
             elif isinstance(element, ListItem):
-                # Handle list items
-                text = element.text.strip()
-                if text:
-                    markdown_lines.append(f"- {text}")
+                # Add list item
+                text_lines.append(f"- {text}")
             elif isinstance(element, Table):
-                # Handle tables
-                if hasattr(element, 'text') and element.text:
-                    # Try to parse table structure
-                    table_md = self._parse_table_text(element.text)
-                    if table_md:
-                        markdown_lines.append(table_md)
-                        markdown_lines.append("")
-            elif isinstance(element, Text):
-                # Handle generic text elements
-                text = element.text.strip()
-                if text:
-                    # Check if it looks like a header
-                    if self._looks_like_header(text):
-                        markdown_lines.append(f"## {text}")
-                    else:
-                        markdown_lines.append(text)
-                        markdown_lines.append("")
+                # Handle table content
+                table_text = self._extract_table_text(element)
+                if table_text:
+                    text_lines.append(table_text)
+            else:
+                # Generic text element
+                text_lines.append(text)
+            
+            # Add spacing between elements
+            text_lines.append("")
         
-        return "\n".join(markdown_lines).strip()
+        return "\n".join(text_lines).strip()
     
-    def _parse_table_text(self, table_text: str) -> str:
-        """Parse table text and convert to markdown table format"""
-        lines = table_text.strip().split('\n')
+    def _extract_table_text(self, table_element) -> Optional[str]:
+        """Extract readable text from table element"""
+        if not hasattr(table_element, 'text') or not table_element.text:
+            return None
+        
+        table_text = table_element.text.strip()
+        if not table_text:
+            return None
+        
+        # Try to format as markdown table
+        lines = table_text.split('\n')
         if len(lines) < 2:
             return table_text
         
-        # Try to detect table structure
-        markdown_lines = []
+        # Simple table formatting
+        formatted_lines = []
         
-        # First line as header
-        header_line = lines[0]
-        if '\t' in header_line:
-            headers = header_line.split('\t')
+        # Header
+        header = lines[0]
+        if '\t' in header:
+            headers = header.split('\t')
         else:
-            # Try to split by multiple spaces
-            headers = re.split(r'\s{2,}', header_line)
+            headers = re.split(r'\s{2,}', header)
         
         if len(headers) > 1:
-            markdown_lines.append("| " + " | ".join(headers) + " |")
-            markdown_lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
+            formatted_lines.append("| " + " | ".join(headers) + " |")
+            formatted_lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
             
             # Data rows
             for line in lines[1:]:
@@ -171,100 +209,97 @@ class MultiFormatDocumentParser:
                 else:
                     cells = re.split(r'\s{2,}', line)
                 
-                # Ensure row has same length as headers
+                # Ensure consistent row length
                 while len(cells) < len(headers):
                     cells.append("")
-                cells = cells[:len(headers)]  # Truncate if longer
+                cells = cells[:len(headers)]
                 
                 # Escape pipe characters
                 escaped_cells = [cell.replace("|", "\\|").strip() for cell in cells]
-                markdown_lines.append("| " + " | ".join(escaped_cells) + " |")
+                formatted_lines.append("| " + " | ".join(escaped_cells) + " |")
             
-            return "\n".join(markdown_lines)
+            return "\n".join(formatted_lines)
         
         return table_text
     
-    def _looks_like_header(self, text: str) -> bool:
-        """Check if text looks like a header"""
-        # All caps and reasonable length
-        if text.isupper() and 3 < len(text) < 100:
-            return True
-        
-        # Ends with common header patterns
-        if re.search(r'[:：]$', text):
-            return True
-        
-        # Contains common header words
-        header_words = ['introduction', 'conclusion', 'summary', 'overview', 'background']
-        if any(word in text.lower() for word in header_words):
-            return True
-        
-        return False
-    
-    def _assess_conversion_quality(self, content: str, file_type: str, elements=None) -> str:
-        """Assess the quality of the conversion"""
+    def _assess_conversion_quality(self, content: str, file_type: str, elements: List) -> str:
+        """Assess the quality of the document conversion"""
         if not content or len(content.strip()) < 10:
             return "poor"
         
-        # Check element count if available
+        # Check element count
         if elements and len(elements) == 0:
             return "poor"
         
-        # Check for common conversion artifacts and content structure
+        # Quality assessment based on file type
         if file_type in self.document_formats:
-            # Check for structured content
-            if "# " in content and "## " in content:
-                return "excellent"
-            elif "# " in content or "## " in content:
-                return "good"
-            elif len(content) > 200:
-                return "fair"
-            else:
-                return "poor"
-        
+            return self._assess_document_quality(content)
         elif file_type in self.text_formats:
-            # Text formats should convert well
-            if len(content) > 100:
-                return "excellent"
-            elif len(content) > 50:
-                return "good"
-            else:
-                return "fair"
-        
+            return self._assess_text_quality(content)
         elif file_type in self.spreadsheet_formats:
-            # Check for table structure
-            if "|" in content and "---" in content:
-                return "excellent"
-            elif "|" in content:
-                return "good"
-            elif len(content) > 100:
-                return "fair"
-            else:
-                return "poor"
-        
+            return self._assess_spreadsheet_quality(content)
         elif file_type in self.presentation_formats:
-            # Check for slide structure
-            if "# " in content and content.count("# ") > 2:
-                return "excellent"
-            elif "# " in content:
-                return "good"
-            elif len(content) > 100:
-                return "fair"
-            else:
-                return "poor"
-        
+            return self._assess_presentation_quality(content)
         elif file_type in self.image_formats:
-            # OCR quality assessment
-            if len(content) > 200:
-                return "excellent"
-            elif len(content) > 100:
-                return "good"
-            elif len(content) > 50:
-                return "fair"
-            else:
-                return "poor"
-        
-        # Default assessment
+            return self._assess_image_quality(content)
+        else:
+            return self._assess_generic_quality(content)
+    
+    def _assess_document_quality(self, content: str) -> str:
+        """Assess quality of document format conversions"""
+        if "# " in content and "## " in content:
+            return "excellent"
+        elif "# " in content:
+            return "good"
+        elif len(content) > 200:
+            return "fair"
+        else:
+            return "poor"
+    
+    def _assess_text_quality(self, content: str) -> str:
+        """Assess quality of text format conversions"""
+        if len(content) > 100:
+            return "excellent"
+        elif len(content) > 50:
+            return "good"
+        else:
+            return "fair"
+    
+    def _assess_spreadsheet_quality(self, content: str) -> str:
+        """Assess quality of spreadsheet conversions"""
+        if "|" in content and "---" in content:
+            return "excellent"
+        elif "|" in content:
+            return "good"
+        elif len(content) > 100:
+            return "fair"
+        else:
+            return "poor"
+    
+    def _assess_presentation_quality(self, content: str) -> str:
+        """Assess quality of presentation conversions"""
+        if "# " in content and content.count("# ") > 2:
+            return "excellent"
+        elif "# " in content:
+            return "good"
+        elif len(content) > 100:
+            return "fair"
+        else:
+            return "poor"
+    
+    def _assess_image_quality(self, content: str) -> str:
+        """Assess quality of OCR conversions"""
+        if len(content) > 200:
+            return "excellent"
+        elif len(content) > 100:
+            return "good"
+        elif len(content) > 50:
+            return "fair"
+        else:
+            return "poor"
+    
+    def _assess_generic_quality(self, content: str) -> str:
+        """Generic quality assessment"""
         if len(content) > 200:
             return "good"
         elif len(content) > 100:

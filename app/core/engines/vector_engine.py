@@ -67,34 +67,60 @@ class VectorEngine:
         self.last_updated = datetime.now()
 
     def search(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
-        """Search for relevant documents using semantic similarity"""
+        """Search for relevant documents using semantic similarity with enhanced metadata"""
         # Generate query embedding
         query_embedding = self.embedding_model.encode(query).tolist()
 
-        # Search in collection
+        # Search in collection with more results for better selection
+        search_limit = min(limit * 2, 20)  # Get more results initially for better filtering
+        
         results = self.collection.query(
             query_embeddings=[query_embedding],
-            n_results=limit,
+            n_results=search_limit,
             include=["documents", "metadatas", "distances"],
         )
 
-        # Format results
+        # Format and filter results
         formatted_results = []
         if results["ids"] and len(results["ids"][0]) > 0:
             for i in range(len(results["ids"][0])):
-                formatted_results.append(
-                    {
-                        "id": results["ids"][0][i],
-                        "text": results["documents"][0][i],
-                        "metadata": results["metadatas"][0][i],
-                        "score": 1
-                        - results["distances"][0][i],  # Convert distance to similarity
-                        "title": results["metadatas"][0][i].get("title", "Unknown"),
-                        "snippet": results["documents"][0][i][:150] + "...",
-                    }
-                )
-
-        return formatted_results
+                metadata = results["metadatas"][0][i]
+                score = 1 - results["distances"][0][i]  # Convert distance to similarity
+                
+                # Enhanced metadata extraction - handle both old and new field names
+                title = metadata.get("title", "Untitled Document")
+                category = metadata.get("category", "Unknown Category")
+                # Handle both 'file' and 'filename' fields for backward compatibility
+                file_name = metadata.get("file") or metadata.get("filename", "Unknown File")
+                
+                # Smart snippet generation based on category
+                content = results["documents"][0][i]
+                if category.lower() == 'research':
+                    # For research papers, try to get abstract or introduction
+                    snippet = self._extract_research_snippet(content)
+                else:
+                    # For other documents, standard snippet
+                    snippet = content[:150] + "..." if len(content) > 150 else content
+                
+                formatted_results.append({
+                    "id": results["ids"][0][i],
+                    "text": content,
+                    "metadata": {
+                        **metadata,
+                        "title": title,
+                        "category": category,
+                        "file": file_name,
+                        "enhanced_title": self._enhance_title(title, category)
+                    },
+                    "score": score,
+                    "title": title,
+                    "snippet": snippet,
+                    "category": category
+                })
+        
+        # Sort by score and return top results
+        formatted_results.sort(key=lambda x: x["score"], reverse=True)
+        return formatted_results[:limit]
 
     def get_stats(self) -> Dict[str, Any]:
         """Get statistics about the vector store"""
@@ -105,7 +131,10 @@ class VectorEngine:
         unique_files = set()
         if all_metadata:
             for meta in all_metadata:
-                unique_files.add(meta.get("file", ""))
+                # Handle both 'file' and 'filename' fields
+                file_name = meta.get("file") or meta.get("filename", "")
+                if file_name:
+                    unique_files.add(file_name)
 
         return {
             "total_chunks": count,
@@ -121,6 +150,27 @@ class VectorEngine:
             name=self.collection.name, metadata={"hnsw:space": "cosine"}
         )
         self.last_updated = datetime.now()
+
+    def clear_category(self, category: str):
+        """Clear documents from a specific category"""
+        try:
+            # Get all documents in the category
+            results = self.collection.get(
+                where={"category": category},
+                include=["ids"]
+            )
+            
+            if results["ids"]:
+                # Delete documents from this category
+                self.collection.delete(ids=results["ids"])
+                print(f"🗑️  Cleared {len(results['ids'])} documents from category: {category}")
+            else:
+                print(f"ℹ️  No documents found in category: {category}")
+                
+        except Exception as e:
+            print(f"❌ Error clearing category {category}: {e}")
+            # Fallback to full collection clear
+            self.clear_collection()
 
     def is_initialized(self) -> bool:
         """Check if the vector store has been initialized with documents"""
@@ -158,3 +208,69 @@ class VectorEngine:
             }
         except Exception as e:
             return {"error": str(e)}
+
+    def _extract_research_snippet(self, content: str) -> str:
+        """Extract a meaningful snippet from research paper content"""
+        if not content:
+            return ""
+        
+        # Try to find abstract or introduction
+        content_lower = content.lower()
+        
+        # Look for common research paper sections
+        abstract_markers = ["abstract", "summary", "overview"]
+        intro_markers = ["introduction", "background", "overview"]
+        
+        # Try to find abstract first
+        for marker in abstract_markers:
+            if marker in content_lower:
+                start_idx = content_lower.find(marker)
+                # Get text after the marker
+                after_marker = content[start_idx + len(marker):]
+                # Find the end (next section or reasonable length)
+                end_idx = min(400, len(after_marker))
+                if end_idx < len(after_marker):
+                    # Try to end at a sentence boundary
+                    last_period = after_marker[:end_idx].rfind(".")
+                    if last_period > 200:
+                        end_idx = last_period + 1
+                return after_marker[:end_idx].strip()
+        
+        # If no abstract, try introduction
+        for marker in intro_markers:
+            if marker in content_lower:
+                start_idx = content_lower.find(marker)
+                after_marker = content[start_idx + len(marker):]
+                end_idx = min(300, len(after_marker))
+                if end_idx < len(after_marker):
+                    last_period = after_marker[:end_idx].rfind(".")
+                    if last_period > 150:
+                        end_idx = last_period + 1
+                return after_marker[:end_idx].strip()
+        
+        # Fallback: return first 200 characters with sentence boundary
+        if len(content) > 200:
+            last_period = content[:200].rfind(".")
+            if last_period > 100:
+                return content[:last_period + 1].strip()
+            return content[:200].strip()
+        
+        return content.strip()
+
+    def _enhance_title(self, title: str, category: str) -> str:
+        """Enhance document title based on category"""
+        if not title or title == "Untitled Document":
+            return f"Document from {category.title()}"
+        
+        # Clean up common title issues
+        title = title.replace("-", " ").replace("_", " ")
+        
+        # Add category context if not obvious
+        if category.lower() == 'research' and 'research' not in title.lower():
+            title = f"{title} (Research Paper)"
+        elif category.lower() == 'technical' and 'technical' not in title.lower():
+            title = f"{title} (Technical)"
+        elif category.lower() == 'handbooks' and 'handbook' not in title.lower():
+            title = f"{title} (Handbook)"
+        
+        return title.title()
