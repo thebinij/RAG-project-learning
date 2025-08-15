@@ -330,8 +330,17 @@ const VisualizerSearch = {
 // Document browser functionality
 const VisualizerDocuments = {
     
+    // State variables
+    currentPage: 1,
+    currentLimit: 10,
+    currentCategory: '',
+    currentFile: '',
+    allDocuments: [],
+    filteredDocuments: [],
+    
     // Initialize document browser
     init: function() {
+        this.loadFilters();
         this.loadDocuments();
         this.setupEventListeners();
     },
@@ -339,67 +348,350 @@ const VisualizerDocuments = {
     // Setup event listeners
     setupEventListeners: function() {
         // Filter controls
-        const filterInputs = document.querySelectorAll('.document-filter');
-        filterInputs.forEach(input => {
-            input.addEventListener('change', () => this.applyFilters());
-        });
+        const categoryFilter = document.getElementById('categoryFilter');
+        const fileFilter = document.getElementById('fileFilter');
+        const limitSelect = document.getElementById('limitSelect');
         
-        // Sort controls
-        const sortSelect = document.getElementById('documentSort');
-        if (sortSelect) {
-            sortSelect.addEventListener('change', () => this.applySorting());
+        if (categoryFilter) {
+            categoryFilter.addEventListener('change', () => {
+                this.currentPage = 1;
+                this.applyFilters();
+            });
+        }
+        
+        if (fileFilter) {
+            fileFilter.addEventListener('change', () => {
+                this.currentPage = 1;
+                this.applyFilters();
+            });
+        }
+        
+        if (limitSelect) {
+            limitSelect.addEventListener('change', () => {
+                this.currentPage = 1;
+                this.applyFilters();
+            });
+        }
+    },
+    
+    // Load filter options
+    async loadFilters() {
+        try {
+            const response = await fetch('/api/visualizer/stats');
+            const stats = await response.json();
+            
+            if (stats.error) return;
+            
+            // Populate category filter
+            const categoryFilter = document.getElementById('categoryFilter');
+            if (categoryFilter) {
+                categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                Object.keys(stats.categories).forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category;
+                    option.textContent = category;
+                    categoryFilter.appendChild(option);
+                });
+            }
+            
+            // Populate file filter
+            const fileFilter = document.getElementById('fileFilter');
+            if (fileFilter) {
+                fileFilter.innerHTML = '<option value="">All Files</option>';
+                Object.keys(stats.files).forEach(file => {
+                    const option = document.createElement('option');
+                    option.value = file;
+                    option.textContent = file;
+                    fileFilter.appendChild(option);
+                });
+            }
+            
+        } catch (error) {
+            console.error('Error loading filters:', error);
         }
     },
     
     // Load documents
     async loadDocuments() {
         try {
-            VisualizerUtils.showLoading('documentsLoading', true);
-            const metadata = await VisualizerApi.getDocumentMetadata();
-            this.displayDocuments(metadata);
+            const response = await fetch('/api/visualizer/metadata');
+            const data = await response.json();
+            
+            if (data.error) {
+                console.error('Error loading documents:', data.error);
+                return;
+            }
+            
+            // Check if data has content (either direct array or wrapped in metadata object)
+            const metadataArray = data.metadata || data;
+            if (!Array.isArray(metadataArray) || metadataArray.length === 0) {
+                this.allDocuments = [];
+                this.applyFilters();
+                return;
+            }
+            
+            // Transform metadata to document format
+            this.allDocuments = metadataArray.map((item, index) => ({
+                id: item.id !== undefined ? item.id : index,
+                metadata: {
+                    title: item.title,
+                    category: item.category,
+                    file: item.filename,
+                    chunk_index: item.chunk_index,
+                    total_chunks: item.total_chunks,
+                    file_type: item.file_type,
+                    conversion_quality: item.conversion_quality,
+                    chunk_size: item.chunk_size,
+                    content: item.content || ""
+                },
+                // Use actual content from the API
+                text: item.content_preview || item.content || `Chunk ${item.chunk_index + 1} of ${item.total_chunks} from ${item.filename} (${item.chunk_size} characters)`
+            }));
+            
+            this.applyFilters();
+            
         } catch (error) {
-            VisualizerUtils.showAlert('Failed to load documents', 'danger');
-        } finally {
-            VisualizerUtils.showLoading('documentsLoading', false);
-        }
-    },
-    
-    // Display documents
-    displayDocuments: function(documents) {
-        const container = document.getElementById('documentsContainer');
-        if (!container) return;
-        
-        if (documents && documents.length > 0) {
-            let html = '';
-            documents.forEach(doc => {
-                html += `
-                    <div class="document-card">
-                        <h5>${VisualizerUtils.sanitizeHTML(doc.title || 'Untitled')}</h5>
-                        <div class="metadata-badges">
-                            <span class="metadata-badge">${doc.category || 'Unknown'}</span>
-                            <span class="metadata-badge">${doc.chunk_count || 0} chunks</span>
-                            <span class="metadata-badge">${VisualizerUtils.formatDate(doc.created_at)}</span>
-                        </div>
-                        <p class="content-preview">${VisualizerUtils.sanitizeHTML(doc.description || 'No description available')}</p>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        } else {
-            container.innerHTML = '<p class="text-muted">No documents found.</p>';
+            console.error('Error loading documents:', error);
         }
     },
     
     // Apply filters
-    applyFilters: function() {
-        // Implementation for filtering documents
-        console.log('Applying filters...');
+    applyFilters() {
+        this.currentCategory = document.getElementById('categoryFilter')?.value || '';
+        this.currentFile = document.getElementById('fileFilter')?.value || '';
+        this.currentLimit = parseInt(document.getElementById('limitSelect')?.value || '10');
+        
+        this.filteredDocuments = this.allDocuments.filter(doc => {
+            if (this.currentCategory && doc.metadata.category !== this.currentCategory) return false;
+            if (this.currentFile && doc.metadata.file !== this.currentFile) return false;
+            return true;
+        });
+        
+        this.updateDisplay();
     },
     
-    // Apply sorting
-    applySorting: function() {
-        // Implementation for sorting documents
-        console.log('Applying sorting...');
+    // Update display
+    updateDisplay() {
+        
+        const startIndex = (this.currentPage - 1) * this.currentLimit;
+        const endIndex = startIndex + this.currentLimit;
+        const pageDocuments = this.filteredDocuments.slice(startIndex, endIndex);
+        
+        // Update statistics
+        const showingCount = document.getElementById('showingCount');
+        const totalCount = document.getElementById('totalCount');
+        if (showingCount) showingCount.textContent = pageDocuments.length;
+        if (totalCount) totalCount.textContent = this.filteredDocuments.length;
+        
+        // Update filter info
+        const filterInfo = document.getElementById('filterInfo');
+        if (filterInfo) {
+            let filterText = '';
+            if (this.currentCategory) filterText += `Category: ${this.currentCategory} `;
+            if (this.currentFile) filterText += `File: ${this.currentFile}`;
+            filterInfo.textContent = filterText;
+        }
+        
+        // Display documents
+        this.displayDocuments(pageDocuments);
+        
+        // Update pagination
+        this.updatePagination();
+    },
+    
+    // Display documents
+    displayDocuments(documents) {
+        const grid = document.getElementById('documentsGrid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        
+        if (documents.length === 0) {
+            grid.innerHTML = `
+                <div class="col-12 text-center">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        No documents found matching your filters.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        documents.forEach(doc => {
+            const card = document.createElement('div');
+            card.className = 'col-md-6 col-lg-4 mb-3';
+            card.innerHTML = `
+                <div class="card document-card h-100" onclick="VisualizerDocuments.showDocumentDetail(${doc.id})">
+                    <div class="card-body">
+                        <h6 class="card-title text-primary mb-2">
+                            ${doc.metadata.title || 'No Title'}
+                        </h6>
+                        <div class="badge-container">
+                            <span class="badge bg-secondary metadata-badge">
+                                <i class="fas fa-folder me-1"></i>${doc.metadata.category}
+                            </span>
+                            <span class="badge bg-info metadata-badge file-badge" title="${doc.metadata.file}">
+                                <i class="fas fa-file me-1"></i>
+                                <span class="filename-text">${doc.metadata.file}</span>
+                            </span>
+                            ${doc.metadata.chunk_index !== undefined ? 
+                                `<span class="badge bg-warning metadata-badge">
+                                    <i class="fas fa-layer-group me-1"></i>${doc.metadata.chunk_index + 1}/${doc.metadata.total_chunks}
+                                </span>` : ''
+                            }
+                        </div>
+                        <div class="content-preview">
+                            <p class="card-text small">${doc.text}</p>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        <i class="fas fa-eye me-1"></i>Click to view details
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    },
+    
+            // Update pagination
+        updatePagination() {
+            const totalPages = Math.ceil(this.filteredDocuments.length / this.currentLimit);
+            const pagination = document.getElementById('pagination');
+            if (!pagination) return;
+            
+            pagination.innerHTML = '';
+            
+            if (totalPages <= 1) {
+                return;
+            }
+            
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${this.currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `
+                <a class="page-link" href="#" onclick="VisualizerDocuments.changePage(${this.currentPage - 1}); return false;">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            `;
+            pagination.appendChild(prevLi);
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= this.currentPage - 2 && i <= this.currentPage + 2)) {
+                    const li = document.createElement('li');
+                    li.className = `page-item ${i === this.currentPage ? 'active' : ''}`;
+                    li.innerHTML = `<a class="page-link" href="#" onclick="VisualizerDocuments.changePage(${i}); return false;">${i}</a>`;
+                    pagination.appendChild(li);
+                } else if (i === this.currentPage - 3 || i === this.currentPage + 3) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item disabled';
+                    li.innerHTML = '<span class="page-link">...</span>';
+                    pagination.appendChild(li);
+                }
+            }
+            
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${this.currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `
+                <a class="page-link" href="#" onclick="VisualizerDocuments.changePage(${this.currentPage + 1}); return false;">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            `;
+            pagination.appendChild(nextLi);
+        },
+    
+            // Change page
+        changePage(page) {
+            if (page < 1) {
+                return;
+            }
+            this.currentPage = page;
+            this.updateDisplay();
+        },
+    
+    // Show document detail
+    showDocumentDetail(docId) {
+        const doc = this.allDocuments.find(d => d.id === docId);
+        if (!doc) {
+            console.error('Document not found for ID:', docId);
+            return;
+        }
+        
+        const container = document.getElementById('documentDetail');
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div class="row">
+                <div class="col-md-7">
+                    <h5 class="text-primary mb-3">${doc.metadata.title || 'No Title'}</h5>
+                    <div class="badge-container">
+                        <span class="badge bg-secondary metadata-badge me-2">
+                            <i class="fas fa-folder me-1"></i>${doc.metadata.category}
+                        </span>
+                        <span class="badge bg-info metadata-badge file-badge me-2" title="${doc.metadata.file}">
+                            <i class="fas fa-file me-1"></i>
+                            <span class="filename-text">${doc.metadata.file}</span>
+                        </span>
+                        ${doc.metadata.chunk_index !== undefined ? 
+                            `<span class="badge bg-warning metadata-badge me-2">
+                                <i class="fas fa-layer-group me-1"></i>Chunk ${doc.metadata.chunk_index + 1} of ${doc.metadata.total_chunks}
+                            </span>` : ''
+                        }
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Content</h6>
+                        </div>
+                        <div class="card-body">
+                            <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit; max-height: 400px; overflow-y: auto;">${doc.metadata.content || doc.text}</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Metadata</h6>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                ${Object.entries(doc.metadata).filter(([key, _]) => key !== 'content').map(([key, value]) => `
+                                    <dt class="col-sm-5 text-break">${key}:</dt>
+                                    <dd class="col-sm-7 text-break">${value}</dd>
+                                `).join('')}
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Try to show the modal
+        try {
+            const modalElement = document.getElementById('documentModal');
+            if (modalElement) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } else {
+                console.error('Modal element not found');
+            }
+        } catch (error) {
+            console.error('Error showing modal:', error);
+            // Fallback: try to show modal manually
+            const modalElement = document.getElementById('documentModal');
+            if (modalElement) {
+                modalElement.classList.add('show');
+                modalElement.style.display = 'block';
+                modalElement.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+                
+                // Add backdrop
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                document.body.appendChild(backdrop);
+            }
+        }
     }
 };
 

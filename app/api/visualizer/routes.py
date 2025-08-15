@@ -261,16 +261,17 @@ async def api_visualizer_metadata(
         if not viewer.collection:
             return {"error": "ChromaDB not available"}
         
-        # Get all documents with metadata
-        all_docs = viewer.collection.get(include=["metadatas"])
+        # Get all documents with metadata AND content
+        all_docs = viewer.collection.get(include=["metadatas", "documents"])
         
         if not all_docs["metadatas"]:
             return {"metadata": []}
         
-        # Extract and organize metadata
+        # Extract and organize metadata with content
         metadata_list = []
-        for meta in all_docs["metadatas"]:
+        for i, (meta, doc) in enumerate(zip(all_docs["metadatas"], all_docs["documents"])):
             metadata_list.append({
+                "id": i,
                 "title": meta.get("title", "Untitled"),
                 "category": meta.get("category", "Unknown"),
                 "filename": meta.get("file") or meta.get("filename", "Unknown"),
@@ -278,7 +279,9 @@ async def api_visualizer_metadata(
                 "chunk_index": meta.get("chunk_index", 0),
                 "total_chunks": meta.get("total_chunks", 1),
                 "conversion_quality": meta.get("conversion_quality", "Unknown"),
-                "chunk_size": meta.get("chunk_size", 0)
+                "chunk_size": len(doc) if doc else 0,
+                "content": doc if doc else "",
+                "content_preview": (doc[:200] + "..." if doc and len(doc) > 200 else doc) if doc else ""
             })
         
         return {"metadata": metadata_list}
